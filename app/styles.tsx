@@ -171,4 +171,164 @@ content: {
     borderRadius: 20, 
   },
 
+
+
+
+
+
+
+
+
+
+  //Mapa
+
+  mapWrapper: {
+    position: "relative", // Asegura que la barra lateral se posicione dentro del contenedor
+    width: "100%",
+    height: "100%", // Asegúrate de que el mapa ocupe toda la pantalla
+    display: "flex", // Para que el mapa y la barra lateral estén alineados
+  },
+
+  mapContainer: {
+    flex: 1, // El mapa ocupa el espacio restante
+    height: "100%", // Asegura que el mapa ocupe toda la altura del contenedor
+    borderRadius: 15, // Bordes redondeados
+    overflow: "hidden", // Evita que el contenido se desborde
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)", // Sombra para destacar el mapa
+  },
+
+  searchBar: {
+    flexDirection: "row",
+    justifyContent: "center", // Centra los elementos dentro de la barra
+    alignItems: "center",
+    margin: 10, // Espaciado alrededor
+    padding: 10, // Espaciado interno
+    backgroundColor: "#fff", // Fondo blanco
+    borderRadius: 5, // Bordes redondeados
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5, // Sombra para Android
+  },
+
+  searchInput: {
+    flex: 1, // Ocupa todo el espacio disponible dentro de la barra
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    fontSize: 16,
+    marginRight: 10,
+  },
+
+  searchButton: {
+    padding: 10,
+    backgroundColor: "#61dafb",
+    borderRadius: 5,
+  },
+
+  searchButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+
+  sidebar: {
+    position: "absolute", // Superpone la barra lateral dentro del mapa
+    top: 0,
+    left: -400, // Oculto inicialmente
+    width: 400,
+    height: "100%", // Ocupa toda la altura del mapa
+    backgroundColor: "#ffffff",
+    padding: 20,
+    borderRadius: 15, // Bordes redondeados
+    shadowColor: "#000",
+    shadowOffset: { width: 2, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5, // Sombra para Android
+    zIndex: 1000,
+  },
+
+  sidebarOpen: {
+    left: 0, // Muestra la barra lateral
+  },
+
+  closeButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "#f44336",
+    color: "#fff",
+    borderRadius: 5,
+    padding: 10,
+  },
+
+  iconContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 20,
+  },
+
+  iconImage: {
+    width: 150,
+    height: 150,
+    borderRadius: 10,
+    resizeMode: "contain",
+  },
+
+  productsContainer: {
+    flexDirection: "column", // Apila los productos verticalmente
+    gap: 10, // Espaciado entre los productos
+    backgroundColor: "#f9f9f9", // Fondo claro
+    padding: 10, // Espaciado interno
+    borderRadius: 10, // Bordes redondeados
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 2, // Sombra para Android
+    marginTop: 10, // Espaciado superior
+    maxHeight: 200, // Altura máxima del contenedor
+    overflow: "hidden", // Habilita el desplazamiento vertical
+  },
+
+  productCard: {
+    backgroundColor: "#ffffff", // Fondo blanco para cada producto
+    padding: 10, // Espaciado interno
+    borderWidth: 1,
+    borderColor: "#ddd", // Borde sutil
+    borderRadius: 5, // Bordes redondeados
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 2, // Sombra para Android
+  },
+
+  productCardText: {
+    marginVertical: 5, // Espaciado entre líneas
+    fontSize: 14, // Tamaño de fuente
+    color: "#333", // Color del texto
+  },
+
+  reserveButton: {
+    padding: 10,
+    backgroundColor: "#2563eb",
+    borderRadius: 5,
+    color: "#fff",
+    textAlign: "center",
+  },
+
+  reserveButtonDisabled: {
+    backgroundColor: "#ccc",
+  },
+
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 20,
+  },
+
 });
