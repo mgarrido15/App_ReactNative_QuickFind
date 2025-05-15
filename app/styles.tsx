@@ -278,19 +278,17 @@ content: {
   },
 
   productsContainer: {
-    flexDirection: "column", // Apila los productos verticalmente
-    gap: 10, // Espaciado entre los productos
-    backgroundColor: "#f9f9f9", // Fondo claro
-    padding: 10, // Espaciado interno
-    borderRadius: 10, // Bordes redondeados
+    flexDirection: "column",
+    gap: 10,
+    backgroundColor: "#f9f9f9",
+    padding: 10,
+    borderRadius: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
-    elevation: 2, // Sombra para Android
-    marginTop: 10, // Espaciado superior
-    maxHeight: 200, // Altura máxima del contenedor
-    overflow: "hidden", // Habilita el desplazamiento vertical
+    elevation: 2,
+    marginTop: 10,
   },
 
   productCard: {
@@ -330,5 +328,112 @@ content: {
     borderRadius: 50,
     marginBottom: 20,
   },
+
+  productsScrollContainer: {
+    maxHeight: 300, // Mayor altura para más productos visibles
+    marginBottom: 20, // Espacio al final
+  },
+
+
+
+// Estilos para el botón hamburguesa
+hamburgerButton: {
+  position: 'absolute',
+  top: 20,
+  left: 20,
+  zIndex: 10,
+  width: 40,
+  height: 40,
+  borderRadius: 20,
+  backgroundColor: 'white',
+  justifyContent: 'center',
+  alignItems: 'center',
+  elevation: 5,
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.25,
+  shadowRadius: 3.84,
+  padding: 8,
+},
+
+hamburgerLine: {
+  width: 24,
+  height: 3,
+  backgroundColor: '#333',
+  marginVertical: 2,
+  borderRadius: 5,
+},
+
+// Estilos para el menú desplegable
+menuDrawer: {
+  position: 'absolute',
+  top: 0,
+  height: '100%',
+  width: 250,
+  backgroundColor: 'white',
+  zIndex: 20,
+  elevation: 8,
+  shadowColor: "#000",
+  shadowOffset: { width: 2, height: 0 },
+  shadowOpacity: 0.3,
+  shadowRadius: 5,
+},
+
+menuHeader: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: 15,
+  borderBottomWidth: 1,
+  borderBottomColor: '#e0e0e0',
+  backgroundColor: '#f8f8f8',
+},
+
+menuHeaderText: {
+  fontSize: 18,
+  fontWeight: 'bold',
+},
+
+menuCloseButton: {
+  padding: 5,
+},
+
+menuCloseButtonText: {
+  fontSize: 16,
+  fontWeight: 'bold',
+},
+
+menuContent: {
+  padding: 15,
+},
+
+menuItem: {
+  paddingVertical: 12,
+  borderBottomWidth: 1,
+  borderBottomColor: '#e0e0e0',
+},
+
+menuItemText: {
+  fontSize: 16,
+},
+
+menuOverlay: {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: 'rgba(0,0,0,0.3)',
+  zIndex: 15,
+},
+
+hamburgerButtonHeader: {
+  padding: 5,
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+
+
 
 });

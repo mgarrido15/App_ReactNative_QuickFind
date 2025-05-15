@@ -53,7 +53,6 @@ if (Platform.OS === "web") {
         score: company.rating,
       }));
       setMarkers(newMarkers);
-
     };
 
     useEffect(() => {
@@ -132,10 +131,12 @@ if (Platform.OS === "web") {
                     <Text style={{ fontWeight: "bold" }}>Rating: </Text>
                     {selectedCompany.rating ? `${selectedCompany.rating} ⭐` : "No Rating Available"}
                   </Text>
+                  
+                  {/* Sección de productos con mejor scroll */}
                   {selectedCompany.products && selectedCompany.products.length > 0 ? (
                     <>
-                      <Text style={{ fontWeight: "bold", marginTop: 10 }}>Products:</Text>
-                      <View style={styles.productsContainer}>
+                      <Text style={{ fontWeight: "bold", marginTop: 10, marginBottom: 5 }}>Products:</Text>
+                      <ScrollView style={styles.productsScrollContainer} nestedScrollEnabled={true}>
                         {selectedCompany.products.map((product, index) => (
                           <View key={index} style={styles.productCard}>
                             <Text style={styles.productCardText}>
@@ -156,8 +157,7 @@ if (Platform.OS === "web") {
                             </Text>
                           </View>
                         ))}
-                      </View>
-                      {/* Aquí podrías agregar un botón para reservar productos si tienes navegación */}
+                      </ScrollView>
                     </>
                   ) : (
                     <Text style={styles.productCardText}>No Products Available</Text>
