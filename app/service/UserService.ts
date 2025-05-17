@@ -30,3 +30,79 @@ export const logInUser = async (
     throw error;
   }
 };
+
+export const UpdateUserById = async (user: User): Promise<{ user: User }> => {
+  try {
+    const response = await api.put(`/users/${user._id}`, { user });
+    console.log("Response from server:", response.data);
+
+    if (response.status !== 200) {
+      throw new Error("Failed to update user");
+    }
+
+    return { user: response.data};
+  } catch (error) {
+    console.error("Error updating user:", error);
+    throw error;
+  }
+};
+
+export const getUserById = async (id: string): Promise<User> => {
+  try {
+    const response = await api.get(`/users/${id}`);
+
+    if (response.status !== 200) {
+      throw new Error("Failed to fetch user");
+    }
+
+    return response.data.user;
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    throw error;
+  }
+};
+
+export const FollowCompany = async (userId: string, companyId: string): Promise<{ user: User }> => {
+  try {
+    const response = await api.put(`/users/follows/${userId}`, { companyId });
+
+    if (response.status !== 200) {
+      throw new Error("Failed to follow company");
+    }
+
+    return { user: response.data.user };
+  } catch (error) {
+    console.error("Error following company:", error);
+    throw error;
+  }
+};
+
+export const UnfollowCompany = async (userId: string, companyId: string): Promise<{ user: User }> => {
+  try {
+    const response = await api.put(`/users/unfollow/${userId}`, { companyId });
+
+    if (response.status !== 200) {
+      throw new Error("Failed to unfollow company");
+    }
+
+    return { user: response.data.user };
+  } catch (error) {
+    console.error("Error unfollowing company:", error);
+    throw error;
+  }
+};
+
+export const getFollowedCompanies = async (userId: string): Promise<any[]> => {
+  try {
+    const response = await api.get(`/users/followedCompanies/${userId}`);
+
+    if (response.status !== 200) {
+      throw new Error("Failed to fetch followed companies");
+    }
+
+    return response.data.companies || response.data;
+  } catch (error) {
+    console.error("Error fetching followed companies:", error);
+    throw error;
+  }
+};

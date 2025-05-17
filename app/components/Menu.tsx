@@ -13,7 +13,6 @@ interface HamburgerMenuProps {
   onAboutPress?: () => void;
 }
 
-// Usamos forwardRef para poder exponer métodos a los componentes padres
 const HamburgerMenu = forwardRef<MenuHandle, HamburgerMenuProps>(({
   onHomePress,
   onFavoritesPress,
