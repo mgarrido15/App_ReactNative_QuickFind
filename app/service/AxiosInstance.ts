@@ -2,7 +2,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const api = axios.create({
-  baseURL: "http://172.20.10.5:4000/api", // Base URL de tu API
+  baseURL: "http://192.168.1.63:4000/api", // Base URL de tu API
 });
 
 let isRefreshing = false; // Lock para evitar múltiples solicitudes de refresh
@@ -40,7 +40,7 @@ api.interceptors.response.use(
         if (!isRefreshing) {
           isRefreshing = true; // Activa el lock
           try {
-            const { data } = await axios.post("http://172.20.10.5:4000/api/users/auth/refresh", {
+            const { data } = await axios.post("http://192.168.1.63:4000/api/users/auth/refresh", {
               refreshToken,
             });
 

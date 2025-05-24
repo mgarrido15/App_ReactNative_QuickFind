@@ -15,7 +15,11 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "softwareKeyboardLayoutMode": "pan",
+      "navigationBarColor": "#000000",
+      "navigationBarHidden": true,
+      "package": "com.dennisruizb.myapp"
     },
     "web": {
       "bundler": "metro",
