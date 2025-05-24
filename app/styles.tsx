@@ -682,4 +682,12 @@ export const styles = StyleSheet.create({
     fontSize: 14,
   },
 
+  modeSelectionContainer: {
+    padding: 20,
+    alignItems: 'center',
+    gap: 20,
+    justifyContent: 'center',
+    width: '100%',
+  },
+
 });

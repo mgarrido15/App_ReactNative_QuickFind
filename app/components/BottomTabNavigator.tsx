@@ -10,6 +10,7 @@ import { styles } from '../styles'; // Importación de estilos centralizados
 import { Home } from '../screens/Home';
 import { Profile } from '../screens/Profile';
 import { Companies } from '../screens/Companies';
+import { ManageCompanies } from '../screens/ManageCompanies';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -68,13 +69,27 @@ const BottomTabNavigator = () => {
                 }}
             />
             <Tab.Screen
-                name="Notifications"
-                component={Profile}
+                name="ManageCompanies"
+                component={ManageCompanies}
                 initialParams={{ user }}
                 options={{
                     tabBarIcon: ({ focused }) => (
                         <Ionicons
                             name={focused ? 'construct' : 'construct-outline'}
+                            size={24}
+                            color={focused ? '#3498db' : '#777'}
+                        />
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="Basket"
+                component={Profile}
+                initialParams={{ user }}
+                options={{
+                    tabBarIcon: ({ focused }) => (
+                        <Ionicons
+                            name={focused ? 'cart' : 'cart-outline'}
                             size={24}
                             color={focused ? '#3498db' : '#777'}
                         />

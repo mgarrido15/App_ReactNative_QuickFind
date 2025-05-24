@@ -13,3 +13,18 @@ export const getAllCompanies = async (): Promise<Company[]> => {
     throw error;
   }
 };
+
+
+export const postCompany = async (company: Partial<Company>): Promise<Company> => {
+  try {
+    const response = await api.post("/company", company);
+    if (!response.data) {
+      throw new Error("Error posting company");
+    }
+    return response.data;
+  } catch (error) {
+    console.error("Error  posting company:", error);
+    throw error;
+  }
+
+}

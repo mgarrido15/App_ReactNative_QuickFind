@@ -8,9 +8,10 @@ export type RootStackParamList = {
 
 export type TabParamList = {
     Home: { user: User };
-    Companies: { user: User }; // Cambiar de undefined a { user: User }
-    Create: { user: User }; // Cambiar de undefined a { user: User }
-    Notifications: { user: User }; // Cambiar de undefined a { user: User }
+    Companies: { user: User };
+    Create: { user: User };
+    ManageCompanies: { user: User };
+    Basket: { user: User };
     Profile: { user: User };
 };
 
