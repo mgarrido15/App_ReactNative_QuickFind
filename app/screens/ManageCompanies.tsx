@@ -1,263 +1,60 @@
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Image } from 'react-native';
-import { useRoute } from "@react-navigation/native";
-import { User } from "../models/User";
+import { View, Text, TouchableOpacity, Alert, SafeAreaView, ScrollView } from 'react-native';
 import { styles } from '../styles';
-import { postCompany } from '../service/CompanyService';
-import { Company } from '../models/Company';
+import { useRoute } from '@react-navigation/native';
+import { User } from '../models/User';
+
+// Importar los componentes modulares si los has creado
+import { CreateCompanyForm } from '../components/CreateCompanyForm';
+import { ModifyCompany } from '../components/ModifyCompany';
 
 export const ManageCompanies = () => {
     const route = useRoute();
     const { user } = route.params as { user: User };
-    const [loading, setLoading] = useState(false);
-    const [createdCompany, setCreatedCompany] = useState<Company | null>(null);
-    // Estado para controlar qué modo está activo (ninguno, crear o modificar)
     const [mode, setMode] = useState<'none' | 'create' | 'modify'>('none');
 
-    const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        location: '',
-        coordenates_lat: 1,
-        coordenates_lng: 1,
-        email: '',
-        phone: '',
-        password: ''
-    });
-
-    const updateField = (field: string, value: string | number) => {
-        setFormData({
-            ...formData,
-            [field]: value
-        });
-    };
-
-    const handleSubmit = async () => {
-        if (!formData.name || !formData.description || !formData.location || !formData.email || !formData.phone || !formData.password) {
-            Alert.alert('Error', 'Por favor completa todos los campos obligatorios');
-            return;
-        }
-
-        try {
-            setLoading(true);
-
-            const companyData = {
-                ownerId: user._id,
-                name: formData.name,
-                description: formData.description,
-                location: formData.location,
-                coordenates_lat: formData.coordenates_lat,
-                coordenates_lng: formData.coordenates_lng,
-                email: formData.email,
-                phone: formData.phone,
-                password: formData.password
-            };
-
-            const result = await postCompany(companyData);
-
-            setCreatedCompany(result);
-
-            Alert.alert('Éxito', 'Compañía creada correctamente');
-
-            setFormData({
-                name: '',
-                description: '',
-                location: '',
-                coordenates_lat: 1,
-                coordenates_lng: 1,
-                email: '',
-                phone: '',
-                password: ''
-            });
-
-        } catch (error) {
-            console.error("Error al crear compañía:", error);
-            Alert.alert('Error', 'No se pudo crear la compañía. Inténtalo de nuevo.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleCreateNew = () => {
-        setCreatedCompany(null);
-        setMode('none'); // Volver al menú principal
-    };
-
-    const renderModeSelection = () => (
-        <View style={styles.modeSelectionContainer || { padding: 20, alignItems: 'center', gap: 20 }}>
-
-            <TouchableOpacity
-                style={[styles.buttonPerfil, { backgroundColor: '#4c87af', width: '80%' }]}
-                onPress={() => setMode('create')}
-            >
-                <Text style={styles.buttonTextPerfil}>Crear Empresa</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-                style={[styles.buttonPerfil, { backgroundColor: '#777', width: '80%' }]}
-                onPress={() => Alert.alert('Información', 'La función de modificar empresas estará disponible próximamente.')}
-            >
-                <Text style={styles.buttonTextPerfil}>Modificar Empresa</Text>
-            </TouchableOpacity>
-        </View>
-    );
+    // Función para manejar la selección de "Crear Empresa"
+    const handleCreateSelected = () => setMode('create');
+    const handleGoBack = () => setMode('none');
+    const handleModifyCompanies = () => setMode('modify');
 
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView style={{ width: '100%', padding: 16 }}>
                 <Text style={styles.title}>Gestionar Empresas</Text>
 
-                {mode === 'none' && !createdCompany && renderModeSelection()}
-
-                {createdCompany ? (
-                    <View style={styles.companyCard}>
-                        <Text style={styles.companiesHeader}>¡Empresa Creada Exitosamente!</Text>
-
-                        <View style={styles.companyCardContent}>
-                            <View style={styles.companyRow}>
-                                <Text style={styles.companyLabel}>ID:</Text>
-                                <Text style={styles.companyValue}>{createdCompany._id}</Text>
-                            </View>
-
-                            <View style={styles.companyRow}>
-                                <Text style={styles.companyLabel}>Nombre:</Text>
-                                <Text style={styles.companyValue}>{createdCompany.name}</Text>
-                            </View>
-
-                            <View style={styles.companyRow}>
-                                <Text style={styles.companyLabel}>Descripción:</Text>
-                                <Text style={styles.companyValue}>{createdCompany.description}</Text>
-                            </View>
-
-                            <View style={styles.companyRow}>
-                                <Text style={styles.companyLabel}>Ubicación:</Text>
-                                <Text style={styles.companyValue}>{createdCompany.location}</Text>
-                            </View>
-
-                            <View style={styles.companyRow}>
-                                <Text style={styles.companyLabel}>Email:</Text>
-                                <Text style={styles.companyValue}>{createdCompany.email}</Text>
-                            </View>
-
-                            <View style={styles.companyRow}>
-                                <Text style={styles.companyLabel}>Teléfono:</Text>
-                                <Text style={styles.companyValue}>{createdCompany.phone}</Text>
-                            </View>
-
-                            <View style={styles.companyRow}>
-                                <Text style={styles.companyLabel}>Propietario:</Text>
-                                <Text style={styles.companyValue}>{createdCompany.ownerId}</Text>
-                            </View>
-
-                            {createdCompany.icon && (
-                                <Image
-                                    source={{ uri: createdCompany.icon }}
-                                    style={[styles.companyIcon, { alignSelf: 'center', marginTop: 10, width: 100, height: 100 }]}
-                                />
-                            )}
-                        </View>
+                {mode === 'none' && (
+                    <View style={{ padding: 20, alignItems: 'center', gap: 20 }}>
+                        <Text style={[styles.title, { marginBottom: 30 }]}>¿Qué acción deseas realizar?</Text>
 
                         <TouchableOpacity
-                            style={[
-                                styles.buttonPerfil,
-                                { backgroundColor: '#4c87af', marginTop: 20 }
-                            ]}
-                            onPress={handleCreateNew}
+                            style={[styles.buttonPerfil, { backgroundColor: '#4c87af', width: '80%' }]}
+                            onPress={handleCreateSelected}
                         >
-                            <Text style={styles.buttonTextPerfil}>Volver al Menú</Text>
+                            <Text style={styles.buttonTextPerfil}>Crear Empresa</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.buttonPerfil, { backgroundColor: '#777', width: '80%' }]}
+                            onPress={handleModifyCompanies}
+                        >
+                            <Text style={styles.buttonTextPerfil}>Modificar Empresas</Text>
                         </TouchableOpacity>
                     </View>
-                ) : mode === 'create' && (
-                    <>
-                        <View style={{ marginTop: 20, marginBottom: 10, flexDirection: 'row', alignItems: 'center' }}>
-                            <TouchableOpacity
-                                onPress={() => setMode('none')}
-                                style={{ marginRight: 15 }}
-                            >
-                                <Text style={{ color: '#4c87af', fontSize: 16 }}>← Atrás</Text>
-                            </TouchableOpacity>
-                            <Text style={{ fontWeight: 'bold', fontSize: 18 }}>Crear Nueva Empresa</Text>
-                        </View>
+                )}
 
-                        <TextInput
-                            placeholder="Nombre de la empresa"
-                            value={formData.name}
-                            onChangeText={(value) => updateField('name', value)}
-                            style={styles.input}
-                        />
+                {mode === 'create' && (
+                    <CreateCompanyForm
+                        userId={user._id}
+                        onGoBack={handleGoBack}
+                    />
+                )}
 
-                        <TextInput
-                            placeholder="Descripción"
-                            value={formData.description}
-                            onChangeText={(value) => updateField('description', value)}
-                            style={[styles.input, styles.textarea]}
-                            multiline
-                        />
 
-                        <TextInput
-                            placeholder="Ubicación"
-                            value={formData.location}
-                            onChangeText={(value) => updateField('location', value)}
-                            style={styles.input}
-                        />
-
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                            <TextInput
-                                placeholder="Latitud"
-                                value={formData.coordenates_lat.toString()}
-                                onChangeText={(value) => updateField('coordenates_lat', parseFloat(value) || 0)}
-                                style={[styles.input, { width: '48%' }]}
-                                keyboardType="numeric"
-                            />
-
-                            <TextInput
-                                placeholder="Longitud"
-                                value={formData.coordenates_lng.toString()}
-                                onChangeText={(value) => updateField('coordenates_lng', parseFloat(value) || 0)}
-                                style={[styles.input, { width: '48%' }]}
-                                keyboardType="numeric"
-                            />
-                        </View>
-
-                        <TextInput
-                            placeholder="Email"
-                            value={formData.email}
-                            onChangeText={(value) => updateField('email', value)}
-                            style={styles.input}
-                            keyboardType="email-address"
-                        />
-
-                        <TextInput
-                            placeholder="Teléfono"
-                            value={formData.phone}
-                            onChangeText={(value) => updateField('phone', value)}
-                            style={styles.input}
-                            keyboardType="phone-pad"
-                        />
-
-                        <TextInput
-                            placeholder="Contraseña"
-                            value={formData.password}
-                            onChangeText={(value) => updateField('password', value)}
-                            style={styles.input}
-                            secureTextEntry
-                        />
-
-                        <TouchableOpacity
-                            style={[
-                                styles.buttonPerfil,
-                                { backgroundColor: '#4c87af', marginTop: 20, marginBottom: 40 }
-                            ]}
-                            onPress={handleSubmit}
-                            disabled={loading}
-                        >
-                            {loading ? (
-                                <ActivityIndicator color="#fff" size="small" />
-                            ) : (
-                                <Text style={styles.buttonTextPerfil}>Crear Empresa</Text>
-                            )}
-                        </TouchableOpacity>
-                    </>
+                {mode === 'modify' && (
+                    <ModifyCompany
+                        onGoBack={handleGoBack}
+                    />
                 )}
             </ScrollView>
         </SafeAreaView>

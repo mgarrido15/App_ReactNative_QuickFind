@@ -1,3 +1,4 @@
+import { Company } from "../models/Company";
 import { User } from "../models/User";
 import api from "./AxiosInstance";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -40,7 +41,7 @@ export const UpdateUserById = async (user: User): Promise<{ user: User }> => {
       throw new Error("Failed to update user");
     }
 
-    return { user: response.data};
+    return { user: response.data };
   } catch (error) {
     console.error("Error updating user:", error);
     throw error;
@@ -106,3 +107,19 @@ export const getFollowedCompanies = async (userId: string): Promise<any[]> => {
     throw error;
   }
 };
+
+
+export const getAllCompaniesFromUser = async (userId: string): Promise<Company[]> => {
+  try {
+    const response = await api.get(`/users/companies/${userId}`);
+
+    if (response.status !== 200) {
+      throw new Error("Failed to fetch user companies");
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching user companies:", error);
+    throw error;
+  }
+}
