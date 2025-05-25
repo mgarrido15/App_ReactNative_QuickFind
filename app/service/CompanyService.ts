@@ -28,3 +28,21 @@ export const postCompany = async (company: Partial<Company>): Promise<Company> =
   }
 
 }
+
+export const updateCompanyById = async (id: string, company: Partial<Company>): Promise<Company> => {
+  try {
+    const response = await api.put(`/company/${id}`, company);
+
+    if (response.status !== 200) {
+      throw new Error("Error al actualizar la compañía");
+    }
+
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.data && error.response.data.message === "El email ya está registrado") {
+      throw new Error("El email ya está registrado");
+    }
+    console.error("Error al actualizar la compañía:", error);
+    throw error;
+  }
+}
