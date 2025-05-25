@@ -16,3 +16,16 @@ export const getOrdersByUserId = async (userId: string): Promise<IOrder[]> => {
     throw error;
   }
 };
+
+export const createOrder = async (order: IOrder): Promise<IOrder> => {
+  try {
+    const response = await api.post(`orders`, order);
+    if (response.status !== 200) {
+      throw new Error("Failed to create order");
+    }
+    return response.data;
+  } catch (error) {
+    console.error("Error creating order:", error);
+    throw error;
+  }
+};

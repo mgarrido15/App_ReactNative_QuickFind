@@ -2,7 +2,7 @@
 
 // Definición de la interfaz IPedido
 export interface IOrder {
-  _id: string;
+  _id?: string;
   user_id: string;
   products: {
     product_id:{

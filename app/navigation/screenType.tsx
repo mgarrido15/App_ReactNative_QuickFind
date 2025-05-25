@@ -1,5 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { User } from '../models/User';
+import { Company } from '../models/Company';
 
 export type RootStackParamList = {
     Login: undefined;
@@ -13,6 +14,7 @@ export type TabParamList = {
     ManageCompanies: { user: User };
     Basket: { user: User };
     Profile: { user: User };
+    ReserveProduct : { company: Company; user: User};
 };
 
 export type screenProps = NativeStackScreenProps<RootStackParamList>;

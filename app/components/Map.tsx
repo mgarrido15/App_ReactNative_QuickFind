@@ -3,6 +3,11 @@ import { Platform, View, Text, TouchableOpacity, TextInput, Image, ScrollView, M
 import { getAllCompanies } from "../service/CompanyService";
 import { Company } from "../models/Company";
 import { styles } from "../styles";
+import { useNavigation } from "@react-navigation/native";
+import {User} from "../models/User";
+import { useRoute } from "@react-navigation/native";
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { TabParamList } from '../navigation/screenType';
 
 let MapComponent: React.FC<{}>;
 
@@ -17,6 +22,9 @@ if (Platform.OS === "web") {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
     const [sidebarVisible, setSidebarVisible] = useState(false);
+const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
+    const route = useRoute();
+    const { user } = route.params as { user: User };
 
     const handleSearch = (query: string) => {
       if (query) {
@@ -131,7 +139,20 @@ if (Platform.OS === "web") {
                     <Text style={{ fontWeight: "bold" }}>Rating: </Text>
                     {selectedCompany.rating ? `${selectedCompany.rating} ⭐` : "No Rating Available"}
                   </Text>
-                  
+
+                  {/* BOTÓN PARA RESERVAR PRODUCTOS */}
+                  <TouchableOpacity
+                    style={[styles.buttonPerfil, { marginVertical: 16 }]}
+                    onPress={() => {
+                      closeSidebar();
+                      navigation.navigate("ReserveProduct", { company: selectedCompany, user});
+                    }}
+                  >
+                    <Text style={{ color: "#fff", fontWeight: "bold", textAlign: "center" }}>
+                      Reservar productos
+                    </Text>
+                  </TouchableOpacity>
+
                   {/* Sección de productos con mejor scroll */}
                   {selectedCompany.products && selectedCompany.products.length > 0 ? (
                     <>
