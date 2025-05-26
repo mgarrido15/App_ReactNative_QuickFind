@@ -29,3 +29,16 @@ export const createOrder = async (order: IOrder): Promise<IOrder> => {
     throw error;
   }
 };
+
+export const updateOrderByID = async (orderId: string, order: Partial<IOrder>): Promise<IOrder> => {
+  try {
+    const response = await api.put(`orders/${orderId}`, order);
+    if (response.status !== 200) {
+      throw new Error("Failed to update order");
+    }
+    return response.data;
+  } catch (error) {
+    console.error("Error updating order:", error);
+    throw error;
+  }
+}

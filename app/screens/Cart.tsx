@@ -6,6 +6,7 @@ import { getAllCompanies } from "../service/CompanyService";
 import { IOrder } from "../models/Order";
 import { Company } from "../models/Company";
 import { styles } from "../styles";
+import { updateOrderByID } from "../service/OrdersService";
 
 const Cart = () => {
   const route = useRoute();
@@ -45,22 +46,39 @@ const Cart = () => {
     fetchCompanies();
   }, []);
 
-  // Acciones de los botones
-  const handlePay = () => {
+
+const handlePay = async () => {
+  if (!selectedOrder || !selectedOrder._id) return;
+  try {
+    await updateOrderByID(selectedOrder._id, { ...selectedOrder, status: "Finalizado" });
+    setOrders((prev) =>
+      prev.filter((order) => order._id !== selectedOrder._id)
+    );
     setModalVisible(false);
-    Alert.alert("Pago", "Funcionalidad de pago no implementada.");
-  };
+    Alert.alert("Pago", "El pedido ha sido marcado como Finalizado.");
+  } catch (error) {
+    Alert.alert("Error", "No se pudo actualizar el pedido.");
+  }
+};
+
+const handleCancel = async () => {
+  if (!selectedOrder || !selectedOrder._id) return;
+  try {
+    await updateOrderByID(selectedOrder._id, { ...selectedOrder, status: "Cancelado" });
+    setOrders((prev) =>
+      prev.filter((order) => order._id !== selectedOrder._id)
+    );
+    setModalVisible(false);
+    Alert.alert("Cancelar", "El pedido ha sido cancelado.");
+  } catch (error) {
+    Alert.alert("Error", "No se pudo cancelar el pedido.");
+  }
+};
 
   const handleModify = () => {
     setModalVisible(false);
     Alert.alert("Modificar", "Funcionalidad de modificar no implementada.");
   };
-
-  const handleCancel = () => {
-    setModalVisible(false);
-    Alert.alert("Cancelar", "Funcionalidad de cancelar no implementada.");
-  };
-
   return (
     <View style={{ flex: 1, backgroundColor: "#fff", padding: 16 }}>
       <Text style={[styles.title, { textAlign: "center", marginVertical: 20 }]}>
