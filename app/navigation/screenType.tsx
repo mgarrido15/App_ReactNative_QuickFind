@@ -12,7 +12,7 @@ export type TabParamList = {
     Companies: { user: User };
     Create: { user: User };
     ManageCompanies: { user: User };
-    Basket: { user: User };
+    Cart: { user: User };
     Profile: { user: User };
     ReserveProduct : { company: Company; user: User};
 };

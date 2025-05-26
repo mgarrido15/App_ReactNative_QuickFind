@@ -4,17 +4,16 @@ import { TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute } from "@react-navigation/native";
 import { TabParamList } from '../navigation/screenType';
-import { styles } from '../styles'; // Importación de estilos centralizados
-
-// Importar pantallas
+import { styles } from '../styles'; 
 import { Home } from '../screens/Home';
 import { Profile } from '../screens/Profile';
 import { Companies } from '../screens/Companies';
 import { ManageCompanies } from '../screens/ManageCompanies';
+import  Cart from '../screens/Cart';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
-// Componente personalizado para el botón de crear
+
 const CustomCreateButton = ({ onPress }: { onPress: () => void }) => {
     return (
         <TouchableOpacity
@@ -83,8 +82,8 @@ const BottomTabNavigator = () => {
                 }}
             />
             <Tab.Screen
-                name="Basket"
-                component={Profile}
+                name="Cart"
+                component={Cart}
                 initialParams={{ user }}
                 options={{
                     tabBarIcon: ({ focused }) => (

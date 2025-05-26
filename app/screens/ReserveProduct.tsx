@@ -5,14 +5,12 @@ import { Company } from "../models/Company";
 import { User } from "../models/User";
 import { createOrder } from "../service/OrdersService";
 import { styles } from "../styles";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ReserveProduct = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const { company, user } = route.params as { company: Company; user: User };
 
-  // Estado para cantidades seleccionadas
   const [selectedProducts, setSelectedProducts] = useState<{ [productId: string]: number }>({});
 
   const handleQuantityChange = (productId: string, delta: number) => {
@@ -65,38 +63,77 @@ const ReserveProduct = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      <TouchableOpacity
+        style={{
+          position: "absolute",
+          top: 40,
+          left: 20,
+          zIndex: 10,
+          backgroundColor: "#eee",
+          borderRadius: 20,
+          padding: 8,
+        }}
+        onPress={() => navigation.goBack()}
+      >
+        <Text style={{ fontSize: 18, fontWeight: "bold" }}>{"<"}</Text>
+      </TouchableOpacity>
+
       <Text style={[styles.title, { textAlign: "center", marginVertical: 20 }]}>
         Reservar productos en {company.name}
       </Text>
       <ScrollView style={{ flex: 1, paddingHorizontal: 16 }}>
         {company.products && company.products.length > 0 ? (
           company.products.map((product) => (
-            <View key={product._id} style={styles.productCard}>
-              <Text style={styles.productCardText}>
-                <Text style={{ fontWeight: "bold" }}>Nombre: </Text>
-                {product.name}
-              </Text>
-              <Text style={styles.productCardText}>
-                <Text style={{ fontWeight: "bold" }}>Precio: </Text>
-                {product.price ? `${product.price}€` : "No Price"}
-              </Text>
-              <View style={{ flexDirection: "row", alignItems: "center", marginTop: 5 }}>
-                <TouchableOpacity
-                  style={{ padding: 5, backgroundColor: "#eee", borderRadius: 5, marginRight: 5 }}
-                  onPress={() => handleQuantityChange(product._id, -1)}
-                >
-                  <Text>-</Text>
-                </TouchableOpacity>
-                <Text style={{ minWidth: 20, textAlign: "center" }}>
-                  {selectedProducts[product._id] || 0}
+            <View
+              key={product._id}
+              style={[
+                styles.productCard,
+                {
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                },
+              ]}
+            >
+              <TouchableOpacity
+                style={{ flex: 1 }}
+                onPress={() => handleQuantityChange(product._id, 1)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.productCardText}>
+                  <Text style={{ fontWeight: "bold" }}>Nombre: </Text>
+                  {product.name}
                 </Text>
-                <TouchableOpacity
-                  style={{ padding: 5, backgroundColor: "#eee", borderRadius: 5, marginLeft: 5 }}
-                  onPress={() => handleQuantityChange(product._id, 1)}
+                <Text style={styles.productCardText}>
+                  <Text style={{ fontWeight: "bold" }}>Precio: </Text>
+                  {product.price ? `${product.price}€` : "No Price"}
+                </Text>
+                <Text style={{ marginTop: 5, fontWeight: "bold", fontSize: 16 }}>
+                  Cantidad: {selectedProducts[product._id] || 0}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  marginLeft: 10,
+                  backgroundColor: "#eee",
+                  borderRadius: 20,
+                  width: 32,
+                  height: 32,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                onPress={() => handleQuantityChange(product._id, -1)}
+                disabled={(selectedProducts[product._id] || 0) === 0}
+              >
+                <Text
+                  style={{
+                    fontSize: 20,
+                    color: (selectedProducts[product._id] || 0) === 0 ? "#ccc" : "#333",
+                  }}
                 >
-                  <Text>+</Text>
-                </TouchableOpacity>
-              </View>
+                  -
+                </Text>
+              </TouchableOpacity>
             </View>
           ))
         ) : (
