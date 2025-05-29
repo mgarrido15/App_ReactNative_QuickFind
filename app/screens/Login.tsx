@@ -9,6 +9,7 @@ import { useState, useCallback } from "react";
 import { User } from "../models/User";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { logInUser } from "../service/UserService";
+import * as LocalAuthentication from "expo-local-authentication";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Login">;
 
@@ -41,10 +42,45 @@ export const Login = () => {
     }
   }, [email, password, navigation]);
 
+  const LoginBiometric = async () => {
+    const hasHardware = await LocalAuthentication.hasHardwareAsync();
+    const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
+    const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+    const supportsBiometrics = supportedTypes.includes(LocalAuthentication.AuthenticationType.FINGERPRINT) || supportedTypes.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION);
+    console.log('Tipos soportados:', supportedTypes);
+  
+    if (!hasHardware || !isEnrolled || !supportsBiometrics) {
+      Alert.alert("Autenticacion Biometrica no disponible", "Tu dispositivo no soporta la autenticación biometrica o no está configurado.");
+      return;
+    }
+  
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage: "Autenticación Biométrica",
+      fallbackLabel: "Usar código",
+    });
+  
+    if (result.success) {
+      const userString = await AsyncStorage.getItem("user");
+      if (!userString) {
+        Alert.alert("Error", "No hay datos guardados para login biométrico. Prueba a logearte primero");
+        return;
+      }
+      if (userString) {
+      const user = JSON.parse(userString);
+      navigation.navigate("Home", { user });
+      } else {
+      Alert.alert("Error", "No hay datos guardados para login biométrico.");
+      }
+    } else {
+    Alert.alert("Error en la Autenticación biométrica");
+    }
+  };
+
   const formFields = [
     { key: "email", component: <CustomInput label="Email" value={email} onChangeText={setEmail} /> },
     { key: "password", component: <CustomInput label="Password" isPassword={true} value={password} onChangeText={setPassword} /> },
     { key: "button", component: <CustomButton label="Login" onPress={onLogin} /> },
+    { key: "biometric", component: <CustomButton label="Autenticacion Biométrica" onPress={LoginBiometric} /> },
   ];
 
   return (
