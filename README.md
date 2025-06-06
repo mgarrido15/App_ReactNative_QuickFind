@@ -57,3 +57,17 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+## Minim 2 Marco Garrido
+
+La autentificació local la fa bé, pero només he pogut probarla amb el codi del meu movil y no amb FaceId o TouchID, ja que el meu movil només permet FaceId y no hem deixaba afegir el FaceId en Expo Go, he estat buscant i a la pagina d'expo go possa:
+
+The FaceID authentication for iOS is not supported in Expo Go. You will need to create a development build to test FaceID.
+
+Quan arribi a casa ho probare amb TouchID que en principi hauria d'anar ja que la autentificació local funciona correctament.
+Modificació: Ho he probat a casa amb un dispositiu Android i el TouchID funciona correctament.
+
+Important per probar la app canviar la URL del service AxiosInstance a la teva IP pública, i s'haura d'iniciar sessió amb un usuari per primer cop, per exemple amb : email: dd@gmail.com || pwd: 1234.
+
+
+
