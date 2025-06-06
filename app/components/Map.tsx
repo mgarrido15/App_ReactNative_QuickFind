@@ -1,21 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Platform, View, Text, TouchableOpacity, TextInput, Image, ScrollView, Modal } from "react-native";
-import { getAllCompanies } from "../service/CompanyService";
-import { Company } from "../models/Company";
+import { getAllCompanies } from "../../service/CompanyService";
+import { Company } from "../../models/Company";
 import { styles } from "../styles";
 import { useNavigation } from "@react-navigation/native";
-import {User} from "../models/User";
+import {User} from "../../models/User";
 import { useRoute } from "@react-navigation/native";
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { TabParamList } from '../navigation/screenType';
+import { TabParamList } from '../../navigation/screenType';
 
-let MapComponent: React.FC<{}>;
 
-if (Platform.OS === "web") {
-  MapComponent = () => <View><Text>Mapa web no implementado aquí</Text></View>;
-} else {
   const { default: MapView, Marker } = require("react-native-maps");
-
+  let MapComponent: React.FC<{}>;
+// ok below
   MapComponent = () => {
     const [markers, setMarkers] = useState<any[]>([]);
     const [companies, setCompanies] = useState<Company[]>([]);
@@ -213,6 +210,6 @@ const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
       </View>
     );
   };
-}
+
 
 export default MapComponent;

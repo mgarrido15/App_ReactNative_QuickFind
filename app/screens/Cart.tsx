@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Modal, Alert } from "react-native";
 import { useRoute } from "@react-navigation/native";
-import { getOrdersByUserId, updateOrderByID } from "../service/OrdersService";
-import { getAllCompanies } from "../service/CompanyService";
-import { IOrder } from "../models/Order";
-import { Company } from "../models/Company";
+import { getOrdersByUserId, updateOrderByID } from "../../service/OrdersService";
+import { getAllCompanies } from "../../service/CompanyService";
+import { IOrder } from "../../models/Order";
+import { Company } from "../../models/Company";
 import { styles } from "../styles";
 
 const Cart = () => {

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, SafeAreaView, ScrollView } from 'react-native';
 import { styles } from '../styles';
 import { useRoute } from '@react-navigation/native';
-import { User } from '../models/User';
+import { User } from '../../models/User';
 
 // Importar los componentes modulares si los has creado
 import { CreateCompanyForm } from '../components/CreateCompanyForm';

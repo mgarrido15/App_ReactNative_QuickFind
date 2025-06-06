@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView, ScrollView, Text, View, TouchableOpacity, Alert, Image, ActivityIndicator, TextInput, Modal } from 'react-native';
 import { useRoute } from "@react-navigation/native";
-import { User } from "../models/User";
-import { Company } from "../models/Company";
+import { User } from "../../models/User";
+import { Company } from "../../models/Company";
 import { styles } from '../styles';
-import { getAllCompaniesFromUser } from '../service/UserService';
-import { updateCompanyById } from '../service/CompanyService';
+import { getAllCompaniesFromUser } from '../../service/UserService';
+import { updateCompanyById } from '../../service/CompanyService';
 
 interface ModifyCompanyProps {
     onGoBack?: () => void;

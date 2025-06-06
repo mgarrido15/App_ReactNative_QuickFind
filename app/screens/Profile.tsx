@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, SafeAreaView, Image, TextInput, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import { User } from "../models/User";
+import { User } from "../../models/User";
 import { styles } from "../styles";
-import { getOrdersByUserId } from "../service/OrdersService";
-import { getFollowedCompanies, UpdateUserById } from "../service/UserService";
-import { IOrder } from "../models/Order";
+import { getOrdersByUserId } from "../../service/OrdersService";
+import { getFollowedCompanies, UpdateUserById } from "../../service/UserService";
+import { IOrder } from "../../models/Order";
 
-export const Profile = () => {
+const Profile = () => {
   const route = useRoute();
   const navigation = useNavigation();
   // Permite que initialUser sea opcional para evitar errores si no llega
@@ -286,3 +286,5 @@ export const Profile = () => {
     </SafeAreaView>
   );
 };
+
+export default Profile;

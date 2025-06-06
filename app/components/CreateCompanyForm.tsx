@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Modal, Image, ScrollView } from 'react-native';
 import { styles } from '../styles';
-import { postCompany } from '../service/CompanyService';
-import { Company } from '../models/Company';
+import { postCompany } from '../../service/CompanyService';
+import { Company } from '../../models/Company';
 
 interface CreateCompanyFormProps {
     userId: string;

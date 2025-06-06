@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Text, View, ScrollView, SafeAreaView, Image, TouchableOpacity, Alert } from 'react-native';
-import { getAllCompanies } from '../service/CompanyService';
-import { Company } from '../models/Company';
+import { getAllCompanies } from '../../service/CompanyService';
+import { Company } from '../../models/Company';
 import { StatusBar } from 'expo-status-bar';
 import { useRoute } from "@react-navigation/native";
-import { FollowCompany, UnfollowCompany } from '../service/UserService';
-import { User } from '../models/User';
+import { FollowCompany, UnfollowCompany } from '../../service/UserService';
+import { User } from '../../models/User';
 import { styles } from '../styles'; // Importar estilos centralizados
 
 export const Companies = () => {

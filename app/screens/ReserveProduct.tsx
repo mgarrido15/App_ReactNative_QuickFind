@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import { Company } from "../models/Company";
-import { User } from "../models/User";
-import { createOrder } from "../service/OrdersService";
+import { Company } from "../../models/Company";
+import { User } from "../../models/User";
+import { createOrder } from "../../service/OrdersService";
 import { styles } from "../styles";
 
 const ReserveProduct = () => {
