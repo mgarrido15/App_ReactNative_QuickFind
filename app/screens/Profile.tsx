@@ -1,19 +1,27 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, SafeAreaView, Image, TextInput, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { View, Text, SafeAreaView, Image, TextInput, TouchableOpacity, ScrollView, Alert, Modal, StyleSheet } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { User } from "../models/User";
 import { styles } from "../styles";
 import { getOrdersByUserId } from "../service/OrdersService";
 import { getFollowedCompanies, UpdateUserById } from "../service/UserService";
 import { IOrder } from "../models/Order";
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import * as ImagePicker from 'expo-image-picker';
+import { Camera } from 'expo-camera';
+import * as MediaLibrary from 'expo-media-library';
+import { useRef } from 'react';
+import { UpdateProfilePicture } from "../service/UserService";
+
 
 export const Profile = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  // Permite que initialUser sea opcional para evitar errores si no llega
   const { user: initialUser } = route.params as { user?: User };
+  const [modalVisible, setModalVisible] = useState(false);
 
-  // Si no hay usuario, muestra un mensaje y no sigas renderizando
+
+
   if (!initialUser) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -35,6 +43,7 @@ export const Profile = () => {
     name: user.name || '',
     phone: user.phone || '',
     description: user.description || '',
+    avatar: user.avatar || '',
   });
 
   const [orders, setOrders] = useState<IOrder[]>([]);
@@ -45,12 +54,15 @@ export const Profile = () => {
 
   const followers = [{ id: 1, name: "Empresa A" }];
 
+  
+
   useEffect(() => {
     setEditedUser({
       email: user.email || '',
       name: user.name || '',
       phone: user.phone || '',
       description: user.description || '',
+      avatar: user.avatar || '',
     });
 
     const fetchOrders = async () => {
@@ -115,19 +127,86 @@ export const Profile = () => {
     }
   }, [user._id, selectedTab]);
 
+  // --- Cloudinary image upload logic ---
+  const handleImageUpload = async (uri: string) => {
+    const data = new FormData();
+    data.append('file', { uri, type: 'image/jpeg', name: 'upload.jpg' } as any);
+    data.append("upload_preset", "quickfind");
+    data.append("cloud_name", "dnt2h1b9z");
+
+    const userEmail = editedUser.email || user.email;
+
+    try {
+      const response = await fetch("https://api.cloudinary.com/v1_1/dnt2h1b9z/image/upload", {
+        method: 'POST',
+        body: data,
+      });
+      const fileData = await response.json();
+
+      //aqui se llama al endpoint para atcar al backend y que se guarde la URL
+      await UpdateProfilePicture (userEmail, fileData.secure_url);
+      console.log("la url que se guarda en la bbdd", fileData.secure_url);
+
+      setEditedUser({ ...editedUser, avatar: fileData.url });
+      setModalVisible(false);
+    } catch (error) {
+      Alert.alert("Error al subir la imagen");
+    }
+  };
+
+  const openCamera2 = async () => {
+  setModalVisible(true);
+  const { status } = await ImagePicker.requestCameraPermissionsAsync();
+  if (status !== 'granted') {
+    Alert.alert('Permiso requerido', 'Debes conceder permiso a la cámara.');
+    return;
+  }
+  const result = await ImagePicker.launchCameraAsync({
+    mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+  });
+  console.log("esto es lo que proporciona result        ", result)
+  Alert.alert('ha pasado el imagepicker', '');
+  console.log(result);
+  if (!result.canceled && result.assets && result.assets.length > 0) {
+    handleImageUpload(result.assets[0].uri);
+  }
+};
+
+  const openGallery = async () => {
+  setModalVisible(true);
+  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (status !== 'granted') {
+    Alert.alert('Permiso requerido', 'Debes conceder permiso a la galería.');
+    return;
+  }
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+  });
+    console.log("esto es lo que proporciona result        ", result)
+
+  if (!result.canceled && result.assets && result.assets.length > 0) {
+    handleImageUpload(result.assets[0].uri);
+  }
+};
+  // --- Fin Cloudinary ---
+
   const handleSave = async () => {
     try {
-      // Envía el usuario entero, pero asegúrate de que todos los campos requeridos existen
       const updatedUser: User = {
         ...user,
         name: editedUser.name,
         email: editedUser.email,
         phone: editedUser.phone,
         description: editedUser.description,
+        avatar: editedUser.avatar,
       };
-      console.log("Updated User:", updatedUser);
       const response = await UpdateUserById(updatedUser);
-      console.log ("Response from server:", response);
       setUser(response.user);
       setIsEditing(false);
       Alert.alert("Perfil actualizado", "Tus datos han sido actualizados correctamente.");
@@ -179,14 +258,42 @@ export const Profile = () => {
     }
   };
 
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.containerPerfil}>
         <View style={styles.profileBox}>
           <Image
-            source={{ uri: user.avatar || "https://via.placeholder.com/120" }}
+            source={{ uri: isEditing ? (editedUser.avatar || user.avatar || "https://via.placeholder.com/120") : (user.avatar || "https://via.placeholder.com/120") }}
             style={styles.avatar}
           />
+          {isEditing && (
+            <>
+              <TouchableOpacity style={styles.buttonPerfil} onPress={() => setModalVisible(true)}>
+                <Text style={styles.buttonTextPerfil}>Cambiar Foto</Text>
+              </TouchableOpacity>
+              <Modal
+                animationType="slide"
+                transparent
+                visible={modalVisible}
+                onRequestClose={() => setModalVisible(false)}
+              >
+                <View style={modalStyles.modalView}>
+                  <View style={modalStyles.buttonModalView}>
+                    <TouchableOpacity style={styles.buttonPerfil} onPress={openCamera2}>
+                      <Text style={styles.buttonTextPerfil}>Cámara</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.buttonPerfil} onPress={openGallery}>
+                      <Text style={styles.buttonTextPerfil}>Galería</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <TouchableOpacity style={styles.buttonPerfil} onPress={() => setModalVisible(false)}>
+                    <Text style={styles.buttonTextPerfil}>Cancelar</Text>
+                  </TouchableOpacity>
+                </View>
+              </Modal>
+            </>
+          )}
           <Text style={styles.idText}><Text style={styles.label}>ID:</Text> {user._id || "No disponible"}</Text>
           <View style={styles.divider} />
           {isEditing ? (
@@ -286,3 +393,21 @@ export const Profile = () => {
     </SafeAreaView>
   );
 };
+
+// Estilos para el modal de la imagen
+const modalStyles = StyleSheet.create({
+  buttonModalView: {
+    flexDirection: 'row',
+    padding: 10,
+    justifyContent: 'space-around',
+    backgroundColor: 'white',
+  },
+  modalView: {
+    position: 'absolute',
+    bottom: 2,
+    width: '100%',
+    height: 120,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+  },
+});
