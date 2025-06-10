@@ -123,3 +123,26 @@ export const getAllCompaniesFromUser = async (userId: string): Promise<Company[]
     throw error;
   }
 }
+
+export const registerUser = async (
+  email: string,
+  password: string,
+  name: string
+): Promise<{ user: User }> => {
+  try {
+    const response = await api.post(`/users/`, {
+      name,
+      email,
+      password,
+    });
+
+    if (response.status !== 201 && response.status !== 200) {
+      throw new Error("Failed to register user");
+    }
+
+    return { user: response.data };
+  } catch (error) {
+    console.error("Error registering:", error);
+    throw error;
+  }
+};
