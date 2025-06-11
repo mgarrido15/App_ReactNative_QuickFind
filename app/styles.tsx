@@ -604,8 +604,6 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '100%',
   },
-
-  // Estilos para la pantalla Home
   HomeContainer: {
     flex: 1,
     backgroundColor: '#fff',
@@ -633,7 +631,100 @@ export const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
   },
+  container: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    width: '100%',
+  },
+  sectionHeader: {
+    marginTop: 20,
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  sectionTitle: {
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  backButton: {
+    color: '#4c87af',
+    fontSize: 16,
+  },
+  loadingContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  emptyStateContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  emptyStateMessage: {
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  listTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
 
+  actionButton: {
+    backgroundColor: '#4c87af',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 15,
+  },
+  formLabel: {
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  rowContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  halfColumn: {
+    width: '48%',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    margin: 20,
+    borderRadius: 10,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalButton: {
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    width: '48%',
+  },
+  cancelButton: {
+    backgroundColor: '#777',
+  },
+  saveButton: {
+    backgroundColor: '#4c87af',
+  },
 
 
 });

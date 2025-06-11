@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, ScrollView, Text, View, TouchableOpacity, Alert, Image, ActivityIndicator, TextInput, Modal } from 'react-native';
+import { ScrollView, Text, View, TouchableOpacity, Alert, Image, ActivityIndicator, TextInput, Modal } from 'react-native';
 import { useRoute } from "@react-navigation/native";
 import { User } from "../models/User";
 import { Company } from "../models/Company";
 import { styles } from '../styles';
 import { getAllCompaniesFromUser } from '../service/UserService';
-import { updateCompanyById } from '../service/CompanyService';
+import { updateCompanyById, addProductToCompany } from '../service/CompanyService';
+import { postProduct } from '../service/ProductService';
+import { Product } from '../models/Product';
 
 interface ModifyCompanyProps {
     onGoBack?: () => void;
@@ -17,6 +19,8 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
     const [companies, setCompanies] = useState<Company[]>([]);
     const [loading, setLoading] = useState(true);
     const [editingCompany, setEditingCompany] = useState<Company | null>(null);
+    const [isAddingProduct, setIsAddingProduct] = useState(false);
+    const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         name: '',
         description: '',
@@ -26,7 +30,19 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
         coordenates_lat: 0,
         coordenates_lng: 0,
     });
+    // Actualizado para incluir todos los campos necesarios según el modelo Product
+    const [productFormData, setProductFormData] = useState({
+        name: '',
+        description: '',
+        price: '',
+        stock: '0',
+        category: '',
+        image: '',
+        rating: 0,
+        available: true
+    });
     const [updating, setUpdating] = useState(false);
+    const [creatingProduct, setCreatingProduct] = useState(false);
 
     useEffect(() => {
         const fetchUserCompanies = async () => {
@@ -58,6 +74,22 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
         });
     };
 
+    // Actualizado para inicializar todos los campos necesarios
+    const handleAddProductToCompany = (companyId: string) => {
+        setSelectedCompanyId(companyId);
+        setIsAddingProduct(true);
+        setProductFormData({
+            name: '',
+            description: '',
+            price: '',
+            stock: '0',
+            category: '',
+            image: '',
+            rating: 0,
+            available: true
+        });
+    };
+
     const updateField = (field: string, value: string | number) => {
         setFormData({
             ...formData,
@@ -65,8 +97,20 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
         });
     };
 
+    const updateProductField = (field: string, value: string) => {
+        setProductFormData({
+            ...productFormData,
+            [field]: value
+        });
+    };
+
     const handleCancelEdit = () => {
         setEditingCompany(null);
+    };
+
+    const handleCancelAddProduct = () => {
+        setIsAddingProduct(false);
+        setSelectedCompanyId(null);
     };
 
     const handleUpdateCompany = async () => {
@@ -112,35 +156,96 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
         }
     };
 
+    // Actualizado para incluir todos los campos necesarios según el modelo Product
+    const handleSubmitProduct = async () => {
+        if (!selectedCompanyId) return;
+
+        // Validaciones básicas
+        if (!productFormData.name || !productFormData.description || !productFormData.price) {
+            Alert.alert('Error', 'Por favor completa los campos obligatorios (nombre, descripción y precio)');
+            return;
+        }
+
+        try {
+            setCreatingProduct(true);
+
+            // Paso 1: Crear el producto
+            const productData = {
+                name: productFormData.name,
+                description: productFormData.description,
+                price: parseFloat(productFormData.price),
+                stock: parseInt(productFormData.stock),
+                category: productFormData.category,
+                image: productFormData.image || undefined,
+                companyId: selectedCompanyId,
+                rating: 0,
+                available: true
+            };
+
+            const response: any = await postProduct(productData);
+
+            const newProduct = response.newProduct || response;
+
+
+            // Verificar si tenemos un ID válido
+            if (!newProduct || !newProduct._id) {
+                throw new Error("No se pudo obtener el ID del producto creado");
+            }
+
+            // Paso 2: Añadir el producto a la compañía
+            const updatedCompany = await addProductToCompany(selectedCompanyId, {
+                productId: newProduct._id
+            });
+
+            // Actualizar la lista de compañías
+            setCompanies(companies.map(company =>
+                company._id === updatedCompany._id ? updatedCompany : company
+            ));
+
+            Alert.alert('Éxito', `Producto "${newProduct.name}" añadido correctamente a la compañía`);
+            setIsAddingProduct(false);
+            setSelectedCompanyId(null);
+        } catch (error: any) {
+            let errorMessage = 'No se pudo añadir el producto';
+            if (error.message) {
+                errorMessage = error.message;
+            }
+            console.error("Error al crear producto:", error);
+            Alert.alert('Error', errorMessage);
+        } finally {
+            setCreatingProduct(false);
+        }
+    };
+
     return (
         <View style={{ width: '100%' }}>
-            <View style={{ marginTop: 20, marginBottom: 10, flexDirection: 'row', alignItems: 'center' }}>
+            <View style={styles.sectionHeader}>
                 <TouchableOpacity
                     onPress={onGoBack}
                     style={{ marginRight: 15 }}
                 >
-                    <Text style={{ color: '#4c87af', fontSize: 16 }}>← Atrás</Text>
+                    <Text style={styles.backButton}>← Atrás</Text>
                 </TouchableOpacity>
-                <Text style={{ fontWeight: 'bold', fontSize: 18 }}>Modificar Empresas</Text>
+                <Text style={styles.sectionTitle}>Modificar Empresas</Text>
             </View>
 
             {loading ? (
-                <View style={{ padding: 20, alignItems: 'center' }}>
+                <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="#4c87af" />
                     <Text style={{ marginTop: 10 }}>Cargando empresas...</Text>
                 </View>
             ) : companies.length === 0 ? (
-                <View style={{ padding: 20, alignItems: 'center' }}>
-                    <Text style={[styles.title, { fontSize: 18, marginBottom: 10 }]}>
+                <View style={styles.emptyStateContainer}>
+                    <Text style={styles.emptyStateTitle}>
                         No tienes empresas registradas
                     </Text>
-                    <Text style={{ textAlign: 'center', marginBottom: 20 }}>
+                    <Text style={styles.emptyStateMessage}>
                         Para crear una empresa, vuelve atrás y selecciona "Crear Empresa"
                     </Text>
                 </View>
             ) : (
                 <ScrollView style={{ width: '100%' }}>
-                    <Text style={[styles.title, { fontSize: 18, marginBottom: 20, textAlign: 'center' }]}>
+                    <Text style={styles.listTitle}>
                         Mis Empresas
                     </Text>
 
@@ -150,42 +255,42 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
                                 {company.icon && (
                                     <Image
                                         source={{ uri: company.icon }}
-                                        style={styles.companyIcon || { width: 50, height: 50, borderRadius: 25 }}
+                                        style={styles.companyIcon}
                                     />
                                 )}
-                                <Text style={styles.companiesHeader || { fontSize: 18, fontWeight: 'bold' }}>
+                                <Text style={styles.companiesHeader}>
                                     {company.name}
                                 </Text>
                             </View>
 
-                            <View style={styles.companyCardContent || { padding: 10 }}>
-                                <View style={styles.companyRow || { flexDirection: 'row', marginBottom: 5 }}>
-                                    <Text style={styles.companyLabel || { fontWeight: 'bold', width: '30%' }}>ID:</Text>
-                                    <Text style={styles.companyValue || { width: '70%' }}>{company._id}</Text>
+                            <View style={styles.companyCardContent}>
+                                <View style={styles.companyRow}>
+                                    <Text style={styles.companyLabel}>ID:</Text>
+                                    <Text style={styles.companyValue}>{company._id}</Text>
                                 </View>
 
-                                <View style={styles.companyRow || { flexDirection: 'row', marginBottom: 5 }}>
-                                    <Text style={styles.companyLabel || { fontWeight: 'bold', width: '30%' }}>Descripción:</Text>
-                                    <Text style={styles.companyValue || { width: '70%' }}>{company.description}</Text>
+                                <View style={styles.companyRow}>
+                                    <Text style={styles.companyLabel}>Descripción:</Text>
+                                    <Text style={styles.companyValue}>{company.description}</Text>
                                 </View>
 
-                                <View style={styles.companyRow || { flexDirection: 'row', marginBottom: 5 }}>
-                                    <Text style={styles.companyLabel || { fontWeight: 'bold', width: '30%' }}>Ubicación:</Text>
-                                    <Text style={styles.companyValue || { width: '70%' }}>{company.location}</Text>
+                                <View style={styles.companyRow}>
+                                    <Text style={styles.companyLabel}>Ubicación:</Text>
+                                    <Text style={styles.companyValue}>{company.location}</Text>
                                 </View>
 
-                                <View style={styles.companyRow || { flexDirection: 'row', marginBottom: 5 }}>
-                                    <Text style={styles.companyLabel || { fontWeight: 'bold', width: '30%' }}>Email:</Text>
-                                    <Text style={styles.companyValue || { width: '70%' }}>{company.email}</Text>
+                                <View style={styles.companyRow}>
+                                    <Text style={styles.companyLabel}>Email:</Text>
+                                    <Text style={styles.companyValue}>{company.email}</Text>
                                 </View>
 
-                                <View style={styles.companyRow || { flexDirection: 'row', marginBottom: 5 }}>
-                                    <Text style={styles.companyLabel || { fontWeight: 'bold', width: '30%' }}>Teléfono:</Text>
-                                    <Text style={styles.companyValue || { width: '70%' }}>{company.phone}</Text>
+                                <View style={styles.companyRow}>
+                                    <Text style={styles.companyLabel}>Teléfono:</Text>
+                                    <Text style={styles.companyValue}>{company.phone}</Text>
                                 </View>
 
-                                <View style={styles.companyRow || { flexDirection: 'row', marginBottom: 5 }}>
-                                    <Text style={styles.companyLabel || { fontWeight: 'bold', width: '30%' }}>Valoración:</Text>
+                                <View style={styles.companyRow}>
+                                    <Text style={styles.companyLabel}>Valoración:</Text>
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                         <Text>{company.rating?.toFixed(1) || "N/A"} ⭐</Text>
                                         <Text style={{ marginLeft: 5, color: '#777' }}>
@@ -194,28 +299,28 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
                                     </View>
                                 </View>
 
-                                <View style={styles.companyRow || { flexDirection: 'row', marginBottom: 5 }}>
-                                    <Text style={styles.companyLabel || { fontWeight: 'bold', width: '30%' }}>Seguidores:</Text>
-                                    <Text style={styles.companyValue || { width: '70%' }}>{company.followers || 0}</Text>
+                                <View style={styles.companyRow}>
+                                    <Text style={styles.companyLabel}>Seguidores:</Text>
+                                    <Text style={styles.companyValue}>{company.followers || 0}</Text>
                                 </View>
 
-                                <View style={styles.companyRow || { flexDirection: 'row', marginBottom: 5 }}>
-                                    <Text style={styles.companyLabel || { fontWeight: 'bold', width: '30%' }}>Coordenadas:</Text>
-                                    <Text style={styles.companyValue || { width: '70%' }}>
+                                <View style={styles.companyRow}>
+                                    <Text style={styles.companyLabel}>Coordenadas:</Text>
+                                    <Text style={styles.companyValue}>
                                         {company.coordenates_lat}, {company.coordenates_lng}
                                     </Text>
                                 </View>
 
                                 <TouchableOpacity
-                                    style={[styles.buttonPerfil, { backgroundColor: '#4c87af', marginTop: 15 }]}
+                                    style={styles.actionButton}
                                     onPress={() => handleModifyCompany(company)}
                                 >
                                     <Text style={styles.buttonTextPerfil}>Modificar</Text>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
-                                    style={[styles.buttonPerfil, { backgroundColor: '#4c87af', marginTop: 15 }]}
-                                    onPress={() => Alert.alert('Información', 'Funcionalidad de añadir productos disponible próximamente')}
+                                    style={styles.actionButton}
+                                    onPress={() => handleAddProductToCompany(company._id)}
                                 >
                                     <Text style={styles.buttonTextPerfil}>Añadir Producto</Text>
                                 </TouchableOpacity>
@@ -232,14 +337,14 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
                 animationType="slide"
                 onRequestClose={handleCancelEdit}
             >
-                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center' }}>
-                    <View style={{ backgroundColor: 'white', margin: 20, borderRadius: 10, padding: 20, maxHeight: '80%' }}>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
                         <ScrollView>
-                            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' }}>
+                            <Text style={styles.modalTitle}>
                                 Editar {editingCompany?.name}
                             </Text>
 
-                            <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>Nombre:</Text>
+                            <Text style={styles.formLabel}>Nombre:</Text>
                             <TextInput
                                 value={formData.name}
                                 onChangeText={(value) => updateField('name', value)}
@@ -247,7 +352,7 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
                                 placeholder="Nombre de la empresa"
                             />
 
-                            <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>Descripción:</Text>
+                            <Text style={styles.formLabel}>Descripción:</Text>
                             <TextInput
                                 value={formData.description}
                                 onChangeText={(value) => updateField('description', value)}
@@ -256,7 +361,7 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
                                 multiline
                             />
 
-                            <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>Ubicación:</Text>
+                            <Text style={styles.formLabel}>Ubicación:</Text>
                             <TextInput
                                 value={formData.location}
                                 onChangeText={(value) => updateField('location', value)}
@@ -264,7 +369,7 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
                                 placeholder="Ubicación"
                             />
 
-                            <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>Email:</Text>
+                            <Text style={styles.formLabel}>Email:</Text>
                             <TextInput
                                 value={formData.email}
                                 onChangeText={(value) => updateField('email', value)}
@@ -273,7 +378,7 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
                                 keyboardType="email-address"
                             />
 
-                            <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>Teléfono:</Text>
+                            <Text style={styles.formLabel}>Teléfono:</Text>
                             <TextInput
                                 value={formData.phone}
                                 onChangeText={(value) => updateField('phone', value)}
@@ -282,9 +387,9 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
                                 keyboardType="phone-pad"
                             />
 
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                <View style={{ width: '48%' }}>
-                                    <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>Latitud:</Text>
+                            <View style={styles.rowContainer}>
+                                <View style={styles.halfColumn}>
+                                    <Text style={styles.formLabel}>Latitud:</Text>
                                     <TextInput
                                         value={formData.coordenates_lat.toString()}
                                         onChangeText={(value) => updateField('coordenates_lat', parseFloat(value) || 0)}
@@ -294,8 +399,8 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
                                     />
                                 </View>
 
-                                <View style={{ width: '48%' }}>
-                                    <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>Longitud:</Text>
+                                <View style={styles.halfColumn}>
+                                    <Text style={styles.formLabel}>Longitud:</Text>
                                     <TextInput
                                         value={formData.coordenates_lng.toString()}
                                         onChangeText={(value) => updateField('coordenates_lng', parseFloat(value) || 0)}
@@ -306,9 +411,9 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
                                 </View>
                             </View>
 
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 }}>
+                            <View style={styles.rowContainer}>
                                 <TouchableOpacity
-                                    style={[styles.buttonPerfil, { backgroundColor: '#777', width: '48%' }]}
+                                    style={[styles.modalButton, styles.cancelButton]}
                                     onPress={handleCancelEdit}
                                     disabled={updating}
                                 >
@@ -316,11 +421,102 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
-                                    style={[styles.buttonPerfil, { backgroundColor: '#4c87af', width: '48%' }]}
+                                    style={[styles.modalButton, styles.saveButton]}
                                     onPress={handleUpdateCompany}
                                     disabled={updating}
                                 >
                                     {updating ? (
+                                        <ActivityIndicator color="#fff" size="small" />
+                                    ) : (
+                                        <Text style={styles.buttonTextPerfil}>Guardar</Text>
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Modal para añadir producto */}
+            <Modal
+                visible={isAddingProduct}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={handleCancelAddProduct}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <ScrollView>
+                            <Text style={styles.modalTitle}>
+                                Añadir Nuevo Producto
+                            </Text>
+
+                            <Text style={styles.formLabel}>Nombre:</Text>
+                            <TextInput
+                                value={productFormData.name}
+                                onChangeText={(value) => updateProductField('name', value)}
+                                style={styles.input}
+                                placeholder="Nombre del producto"
+                            />
+
+                            <Text style={styles.formLabel}>Descripción:</Text>
+                            <TextInput
+                                value={productFormData.description}
+                                onChangeText={(value) => updateProductField('description', value)}
+                                style={[styles.input, styles.textarea]}
+                                placeholder="Descripción"
+                                multiline
+                            />
+
+                            <Text style={styles.formLabel}>Precio:</Text>
+                            <TextInput
+                                value={productFormData.price}
+                                onChangeText={(value) => updateProductField('price', value)}
+                                style={styles.input}
+                                placeholder="Precio"
+                                keyboardType="numeric"
+                            />
+
+                            <Text style={styles.formLabel}>Cantidad en stock:</Text>
+                            <TextInput
+                                value={productFormData.stock}
+                                onChangeText={(value) => updateProductField('stock', value)}
+                                style={styles.input}
+                                placeholder="Cantidad disponible"
+                                keyboardType="numeric"
+                            />
+
+                            <Text style={styles.formLabel}>Categoría:</Text>
+                            <TextInput
+                                value={productFormData.category}
+                                onChangeText={(value) => updateProductField('category', value)}
+                                style={styles.input}
+                                placeholder="Categoría"
+                            />
+
+                            <Text style={styles.formLabel}>URL de la imagen:</Text>
+                            <TextInput
+                                value={productFormData.image}
+                                onChangeText={(value) => updateProductField('image', value)}
+                                style={styles.input}
+                                placeholder="URL de la imagen (opcional)"
+                            />
+
+                            <View style={styles.rowContainer}>
+                                <TouchableOpacity
+                                    style={[styles.modalButton, styles.cancelButton]}
+                                    onPress={handleCancelAddProduct}
+                                    disabled={creatingProduct}
+                                >
+                                    <Text style={styles.buttonTextPerfil}>Cancelar</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={[styles.modalButton, styles.saveButton]}
+                                    onPress={handleSubmitProduct}
+                                    disabled={creatingProduct}
+                                >
+                                    {creatingProduct ? (
                                         <ActivityIndicator color="#fff" size="small" />
                                     ) : (
                                         <Text style={styles.buttonTextPerfil}>Guardar</Text>
