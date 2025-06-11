@@ -605,4 +605,35 @@ export const styles = StyleSheet.create({
     width: '100%',
   },
 
+  // Estilos para la pantalla Home
+  HomeContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#fff',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    zIndex: 10,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  headerImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+
+
+
 });
