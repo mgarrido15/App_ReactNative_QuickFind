@@ -4,6 +4,7 @@ import { Login } from "./screens/Login";
 import BottomTabNavigator from "./components/BottomTabNavigator";
 import ReserveProduct from "./screens/ReserveProduct";
 import Register from "./screens/Register";
+import ChatScreen from "./screens/ChatScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -15,6 +16,7 @@ export default function Index() {
       <Stack.Screen name="Home" component={BottomTabNavigator} />
       <Stack.Screen name="ReserveProduct" component={ReserveProduct} />
       <Stack.Screen name="Register" component={Register} />
+      <Stack.Screen name="Chat" component={ChatScreen} />
     </Stack.Navigator>
   );
 }

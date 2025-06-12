@@ -494,7 +494,21 @@ export const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 5,
   },
+  // Añade estos estilos a tu archivo styles.tsx
 
+  chatButton: {
+    backgroundColor: '#4c87af',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 5,
+  },
+  chatButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
   // Estilos para el componente Companies
   companiesContainer: {
     flex: 1,
@@ -726,5 +740,166 @@ export const styles = StyleSheet.create({
     backgroundColor: '#4c87af',
   },
 
-
+  // Estilos para el chat
+  chatContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  chatKeyboardAvoid: {
+    flex: 1,
+  },
+  chatHeader: {
+    backgroundColor: '#4c87af',
+    padding: 15,
+    alignItems: 'center',
+  },
+  chatHeaderTitle: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  chatMessageList: {
+    flex: 1,
+    padding: 10,
+    paddingBottom: 60,
+  },
+  chatMessageBubble: {
+    maxWidth: '80%',
+    padding: 10,
+    borderRadius: 15,
+    marginVertical: 5,
+  },
+  chatSentBubble: {
+    backgroundColor: '#DCF8C6',
+    alignSelf: 'flex-end',
+    marginLeft: '15%',
+  },
+  chatReceivedBubble: {
+    backgroundColor: '#ECECEC',
+    alignSelf: 'flex-start',
+    marginRight: '15%',
+  },
+  chatMessageText: {
+    fontSize: 16,
+  },
+  chatTimestamp: {
+    fontSize: 12,
+    color: '#888',
+    alignSelf: 'flex-end',
+    marginTop: 5,
+  },
+  chatInputContainer: {
+    flexDirection: 'row',
+    padding: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+    backgroundColor: '#fff',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+  },
+  chatInput: {
+    flex: 1,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    maxHeight: 100,
+  },
+  chatSendButton: {
+    backgroundColor: '#4c87af',
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    marginLeft: 10,
+    justifyContent: 'center',
+  },
+  chatSendButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  chatStatusContainer: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chatStatusText: {
+    marginTop: 10,
+    color: '#666',
+  },
+  chatErrorContainer: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffeeee',
+    margin: 10,
+    borderRadius: 10,
+  },
+  chatErrorText: {
+    color: '#cc0000',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  chatRetryButton: {
+    backgroundColor: '#4c87af',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  chatRetryButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  sectionSubtitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 15,
+    marginBottom: 10,
+  },
+  chatRoomItem: {
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    marginBottom: 8,
+    backgroundColor: '#f9f9f9',
+  },
+  selectedChatRoom: {
+    backgroundColor: '#e6f7ff',
+    borderColor: '#4c87af',
+  },
+  chatRoomText: {
+    fontSize: 16,
+  },
+  messageItem: {
+    padding: 10,
+    borderRadius: 8,
+    marginVertical: 5,
+    maxWidth: '85%',
+  },
+  sentMessage: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#DCF8C6',
+    marginLeft: '15%',
+  },
+  receivedMessage: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#ECECEC',
+    marginRight: '15%',
+  },
+  messageSender: {
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  messageText: {
+    marginBottom: 5,
+    fontSize: 15,
+  },
+  messageTime: {
+    fontSize: 11,
+    color: '#888',
+    textAlign: 'right',
+  },
 });

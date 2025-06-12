@@ -38,8 +38,9 @@ export const ManageCompanies = () => {
                             style={[styles.buttonPerfil, { backgroundColor: '#777', width: '80%' }]}
                             onPress={handleModifyCompanies}
                         >
-                            <Text style={styles.buttonTextPerfil}>Modificar Empresas</Text>
+                            <Text style={styles.buttonTextPerfil}>Gestionar Empresas</Text>
                         </TouchableOpacity>
+
                     </View>
                 )}
 

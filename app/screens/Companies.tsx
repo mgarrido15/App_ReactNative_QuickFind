@@ -6,13 +6,19 @@ import { StatusBar } from 'expo-status-bar';
 import { useRoute } from "@react-navigation/native";
 import { FollowCompany, UnfollowCompany } from '../service/UserService';
 import { User } from '../models/User';
-import { styles } from '../styles'; // Importar estilos centralizados
+import { styles } from '../styles';
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../navigation/screenType";
+
+type CompaniesNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export const Companies = () => {
     const [companies, setCompanies] = useState<Company[]>([]);
     const [loading, setLoading] = useState(true);
     const [followingStatus, setFollowingStatus] = useState<{ [key: string]: boolean }>({});
     const [processingFollow, setProcessingFollow] = useState<{ [key: string]: boolean }>({});
+    const navigation = useNavigation<CompaniesNavigationProp>();
 
     const route = useRoute();
     const { user } = route.params as { user: User };
@@ -142,6 +148,15 @@ export const Companies = () => {
                                             </Text>
                                         </View>
                                     )}
+                                    <TouchableOpacity
+                                        style={styles.chatButton}
+                                        onPress={() => navigation.navigate("Chat", {
+                                            user: user,
+                                            companyId: company._id
+                                        })}
+                                    >
+                                        <Text style={styles.chatButtonText}>Chat</Text>
+                                    </TouchableOpacity>
                                 </View>
                             </View>
                         ))

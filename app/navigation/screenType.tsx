@@ -6,6 +6,8 @@ export type RootStackParamList = {
     Login: undefined;
     Home: { user: User };
     Register: undefined;
+    Chat: { user: User; companyId: string };
+
 };
 
 export type TabParamList = {
@@ -15,7 +17,7 @@ export type TabParamList = {
     ManageCompanies: { user: User };
     Cart: { user: User };
     Profile: { user: User };
-    ReserveProduct : { company: Company; user: User};
+    ReserveProduct: { company: Company; user: User };
 };
 
 export type screenProps = NativeStackScreenProps<RootStackParamList>;

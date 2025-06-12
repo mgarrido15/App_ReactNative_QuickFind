@@ -6,8 +6,10 @@ import { Company } from "../models/Company";
 import { styles } from '../styles';
 import { getAllCompaniesFromUser } from '../service/UserService';
 import { updateCompanyById, addProductToCompany } from '../service/CompanyService';
+import { getCompanyChats, getChatMessages, ChatMessage } from '../service/ChatService';
 import { postProduct } from '../service/ProductService';
 import { Product } from '../models/Product';
+import ChatCompany from './ChatCompany'; // Importamos el componente ChatCompany
 
 interface ModifyCompanyProps {
     onGoBack?: () => void;
@@ -15,6 +17,15 @@ interface ModifyCompanyProps {
 
 export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
     const route = useRoute();
+    const [chatsModalVisible, setChatsModalVisible] = useState(false);
+    const [chatComponentVisible, setChatComponentVisible] = useState(false);
+    const [currentCompanyId, setCurrentCompanyId] = useState<string | null>(null);
+    const [chatRooms, setChatRooms] = useState<string[]>([]);
+    const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+    const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+    const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+    const [loadingChats, setLoadingChats] = useState(false);
+    const [loadingMessages, setLoadingMessages] = useState(false);
     const { user } = route.params as { user: User };
     const [companies, setCompanies] = useState<Company[]>([]);
     const [loading, setLoading] = useState(true);
@@ -43,6 +54,9 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
     });
     const [updating, setUpdating] = useState(false);
     const [creatingProduct, setCreatingProduct] = useState(false);
+
+    // Crear un objeto de usuario empresa para el chat
+    const [companyAsUser, setCompanyAsUser] = useState<any>(null);
 
     useEffect(() => {
         const fetchUserCompanies = async () => {
@@ -90,6 +104,57 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
         });
     };
 
+    const handleViewChats = async (companyId: string) => {
+        try {
+            setLoadingChats(true);
+            setCurrentCompanyId(companyId);
+            setChatRooms([]); // Inicialmente un array vacío
+            setSelectedRoomId(null);
+            setChatMessages([]);
+
+            // Crear un objeto usuario para que la empresa actúe como usuario en el chat
+            const selectedCompany = companies.find(c => c._id === companyId);
+            if (selectedCompany) {
+                setCompanyAsUser({
+                    _id: selectedCompany._id,
+                    name: selectedCompany.name,
+                    email: selectedCompany.email,
+                    role: 'company'
+                });
+            }
+
+            const rooms = await getCompanyChats(companyId);
+            // Verificar que rooms es un array antes de asignar
+            setChatRooms(Array.isArray(rooms) ? rooms : []);
+            console.log(rooms);
+            setChatsModalVisible(true);
+        } catch (error) {
+            console.error("Error loading chats:", error);
+            Alert.alert("Error", "No se pudieron cargar los chats.");
+            setChatRooms([]); // En caso de error, asegurar que es un array vacío
+        } finally {
+            setLoadingChats(false);
+        }
+    };
+
+    const handleSelectRoom = async (roomId: string) => {
+        try {
+            // Extraer el ID del usuario del formato "userId-companyId" o "companyId-userId"
+            const parts = roomId.split('-');
+            const userId = parts[0] === currentCompanyId ? parts[1] : parts[0];
+
+            setSelectedRoomId(roomId);
+            setSelectedUserId(userId);
+
+            // Cerrar el modal de chats y abrir el componente ChatCompany
+            setChatsModalVisible(false);
+            setChatComponentVisible(true);
+        } catch (error) {
+            console.error("Error al preparar la sala de chat:", error);
+            Alert.alert("Error", "No se pudo abrir el chat.");
+        }
+    };
+
     const updateField = (field: string, value: string | number) => {
         setFormData({
             ...formData,
@@ -111,6 +176,15 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
     const handleCancelAddProduct = () => {
         setIsAddingProduct(false);
         setSelectedCompanyId(null);
+    };
+
+    // Manejador para cuando se cierra el componente de chat
+    const handleCloseChat = () => {
+        setChatComponentVisible(false);
+        setSelectedRoomId(null);
+        setSelectedUserId(null);
+        // Volver a mostrar el modal de chats
+        setChatsModalVisible(true);
     };
 
     const handleUpdateCompany = async () => {
@@ -324,6 +398,13 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
                                 >
                                     <Text style={styles.buttonTextPerfil}>Añadir Producto</Text>
                                 </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={styles.actionButton}
+                                    onPress={() => handleViewChats(company._id)}
+                                >
+                                    <Text style={styles.buttonTextPerfil}>Ver chats</Text>
+                                </TouchableOpacity>
                             </View>
                         </View>
                     ))}
@@ -527,6 +608,100 @@ export const ModifyCompany = ({ onGoBack }: ModifyCompanyProps) => {
                     </View>
                 </View>
             </Modal>
+
+            {/* Modal para ver chats */}
+            <Modal
+                visible={chatsModalVisible}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={() => setChatsModalVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <ScrollView>
+                            <Text style={styles.modalTitle}>
+                                Chats de la empresa
+                            </Text>
+
+                            {loadingChats ? (
+                                <View style={styles.loadingContainer}>
+                                    <ActivityIndicator size="large" color="#4c87af" />
+                                    <Text style={{ marginTop: 10 }}>Cargando chats...</Text>
+                                </View>
+                            ) : !Array.isArray(chatRooms) ? (
+                                <Text style={styles.emptyStateMessage}>Error al cargar chats. Por favor intenta nuevamente.</Text>
+                            ) : chatRooms.length === 0 ? (
+                                <Text style={styles.emptyStateMessage}>No hay chats disponibles para esta empresa</Text>
+                            ) : (
+                                <>
+                                    <Text style={styles.sectionSubtitle}>Seleccione una conversación:</Text>
+
+                                    {chatRooms.map((roomId) => {
+                                        // Extrae el ID del usuario del formato "userId-companyId" o "companyId-userId"
+                                        const parts = roomId.split('-');
+                                        const userId = parts[0] === currentCompanyId ? parts[1] : parts[0];
+
+                                        return (
+                                            <TouchableOpacity
+                                                key={roomId}
+                                                style={[
+                                                    styles.chatRoomItem,
+                                                    selectedRoomId === roomId && styles.selectedChatRoom
+                                                ]}
+                                                onPress={() => handleSelectRoom(roomId)}
+                                            >
+                                                <Text style={styles.chatRoomText}>
+                                                    Conversación con usuario: {userId}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        );
+                                    })}
+                                </>
+                            )}
+
+                            <TouchableOpacity
+                                style={[styles.modalButton, styles.cancelButton, { marginTop: 20 }]}
+                                onPress={() => setChatsModalVisible(false)}
+                            >
+                                <Text style={styles.buttonTextPerfil}>Cerrar</Text>
+                            </TouchableOpacity>
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Modal para el componente ChatCompany */}
+            <Modal
+                visible={chatComponentVisible}
+                animationType="slide"
+                onRequestClose={handleCloseChat}
+                presentationStyle="fullScreen"
+            >
+                <View style={{ flex: 1 }}>
+                    <View style={styles.chatHeader}>
+                        <TouchableOpacity
+                            style={{ position: 'absolute', left: 10, zIndex: 10 }}
+                            onPress={handleCloseChat}
+                        >
+                            <Text style={{ color: 'white', fontSize: 16 }}>← Volver</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.chatHeaderTitle}>
+                            Chat con usuario {selectedUserId?.substring(0, 8)}...
+                        </Text>
+                    </View>
+
+                    {companyAsUser && selectedUserId && (
+                        <ChatCompany
+                            companyUser={companyAsUser}
+                            userId={selectedUserId}
+                            onClose={handleCloseChat}
+                        />
+                    )}
+                </View>
+            </Modal>
+
         </View>
     );
 };
+
+export default ModifyCompany;
