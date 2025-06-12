@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Modal, Alert } from "react-native";
+import { View, Text, TextInput, ScrollView, ActivityIndicator, TouchableOpacity, Modal, Alert } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { getOrdersByUserId, updateOrderByID } from "../service/OrdersService";
+import { PayOrder, addMoney } from "../service/UserService";
 import { getAllCompanies } from "../service/CompanyService";
 import { IOrder } from "../models/Order";
 import { Company } from "../models/Company";
 import { styles } from "../styles";
+import { User } from "../models/User";
 
-const Cart = () => {
+const Chart = () => {
   const route = useRoute();
-  const { user } = route.params as { user: { _id: string } };
+  const { user } = route.params as { user: User };
   const [orders, setOrders] = useState<IOrder[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,6 +21,12 @@ const Cart = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editProducts, setEditProducts] = useState<{ [productId: string]: number }>({});
+
+  const [wallet, setWallet] = useState(user.wallet ?? 0);
+  const [addMoneyModal, setAddMoneyModal] = useState(false);
+  const [cardNumber, setCardNumber] = useState("");
+  const [amount, setAmount] = useState<number | null>(null);
+
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -50,14 +58,21 @@ const Cart = () => {
   const handlePay = async () => {
     if (!selectedOrder || !selectedOrder._id) return;
     try {
-      await updateOrderByID(selectedOrder._id, { ...selectedOrder, status: "Finalizado" });
+      await PayOrder(user._id, selectedOrder._id);
+      const total = selectedOrder.products.reduce(
+        (sum, prod) => sum + (prod.product_id.price * prod.quantity),
+        0
+      );
+      setWallet(prev => prev - total);
+
       setOrders((prev) =>
         prev.filter((order) => order._id !== selectedOrder._id)
       );
       setModalVisible(false);
-      Alert.alert("Pago", "El pedido ha sido marcado como Finalizado.");
-    } catch (error) {
-      Alert.alert("Error", "No se pudo actualizar el pedido.");
+      Alert.alert("El pedido ha sido pagado correctamente.");
+    } 
+    catch (error) {
+      Alert.alert("Error", "No tienes suficiente dinero.");
     }
   };
 
@@ -84,6 +99,23 @@ const Cart = () => {
     setEditProducts(initialProducts);
     setIsEditing(true);
     setModalVisible(false);
+  };
+  
+    const handleAddMoney = async () => {
+    if (!cardNumber || !amount) {
+      Alert.alert("Error", "Introduce la tarjeta y selecciona una cantidad.");
+      return;
+    }
+    try {
+      await addMoney(user._id, amount);
+      setWallet(prev => prev + amount);
+      setAddMoneyModal(false);
+      setCardNumber("");
+      setAmount(null);
+      Alert.alert("Éxito", `Se han añadido ${amount}€ a tu cartera.`);
+    } catch (error) {
+      Alert.alert("Error", "No se pudo añadir dinero.");
+    }
   };
 
   const handleSaveEdit = async () => {
@@ -318,8 +350,105 @@ const Cart = () => {
           </View>
         </View>
       )}
+        <View style={{ alignItems: "center", marginTop: 24 }}>
+    <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>
+      Dinero: {wallet.toFixed(2)} €
+    </Text>
+    <TouchableOpacity
+      style={{
+        backgroundColor: "#4c87af",
+        paddingVertical: 12,
+        paddingHorizontal: 32,
+        borderRadius: 8,
+        marginBottom: 16,
+      }}
+      onPress={() => setAddMoneyModal(true)}
+    >
+      <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>
+        Añadir dinero
+      </Text>
+    </TouchableOpacity>
+    </View>
+
+<Modal
+  visible={addMoneyModal}
+  transparent
+  animationType="slide"
+  onRequestClose={() => setAddMoneyModal(false)}
+>
+  <View style={{
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "center",
+    alignItems: "center"
+  }}>
+    <View style={{
+      backgroundColor: "#fff",
+      borderRadius: 16,
+      padding: 24,
+      width: "85%",
+      alignItems: "center"
+    }}>
+      <Text style={{ fontWeight: "bold", fontSize: 18, marginBottom: 16 }}>
+        Añadir dinero a la cartera
+      </Text>
+      <Text style={{ alignSelf: "flex-start", marginBottom: 8 }}>Tarjeta:</Text>
+      <View style={{ width: "100%", marginBottom: 16 }}>
+        <TextInput
+          placeholder="Número de tarjeta"
+          value={cardNumber}
+          onChangeText={setCardNumber}
+          keyboardType="number-pad"
+          maxLength={16}
+          style={{
+            borderWidth: 1,
+            borderColor: "#ccc",
+            borderRadius: 8,
+            padding: 10,
+            width: "100%",
+            marginBottom: 8,
+          }}
+        />
+      </View>
+      <Text style={{ alignSelf: "flex-start", marginBottom: 8 }}>Cantidad:</Text>
+      <View style={{ flexDirection: "row", marginBottom: 16 }}>
+        {[5, 10, 20, 50].map((opt) => (
+          <TouchableOpacity
+            key={opt}
+            style={{
+              backgroundColor: amount === opt ? "#4c87af" : "#eee",
+              paddingVertical: 10,
+              paddingHorizontal: 18,
+              borderRadius: 8,
+              marginHorizontal: 6,
+            }}
+            onPress={() => setAmount(opt)}
+          >
+            <Text style={{ color: amount === opt ? "#fff" : "#333", fontWeight: "bold" }}>{opt}€</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+      <TouchableOpacity
+        style={{
+          backgroundColor: "#4c87af",
+          borderRadius: 8,
+          paddingVertical: 12,
+          width: "100%",
+          alignItems: "center",
+          marginBottom: 10,
+        }}
+        onPress={handleAddMoney}
+      >
+          <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>Aceptar</Text>
+      </TouchableOpacity>
+         <TouchableOpacity onPress={() => setAddMoneyModal(false)}>
+            <Text style={{ color: "#4c87af", marginTop: 8 }}>Cancelar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
     </View>
   );
 };
 
-export default Cart;
+export default Chart;

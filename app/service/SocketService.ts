@@ -1,5 +1,6 @@
 import { io } from 'socket.io-client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from './AxiosInstance';
 
 class SocketService {
     private chatSocket: any = null;
@@ -16,7 +17,7 @@ class SocketService {
             console.log("Intentando conectar al socket con token:", token ? "Token presente" : "Sin token");
 
             // Usar la IP correcta, la misma que en AxiosInstance.ts
-            this.chatSocket = io('http://192.168.1.63:4000/chat', {
+            this.chatSocket = io(`${BASE_URL}/chat`, {
                 auth: {
                     token: token || ''
                 },

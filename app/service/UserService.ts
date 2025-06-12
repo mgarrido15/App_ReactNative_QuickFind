@@ -124,11 +124,7 @@ export const getAllCompaniesFromUser = async (userId: string): Promise<Company[]
   }
 }
 
-export const registerUser = async (
-  email: string,
-  password: string,
-  name: string
-): Promise<{ user: User }> => {
+export const registerUser = async (email: string, password: string, name: string): Promise<{ user: User }> => {
   try {
     const response = await api.post(`/users/`, {
       name,
@@ -146,3 +142,33 @@ export const registerUser = async (
     throw error;
   }
 };
+
+export const addMoney = async (userId: string, amount: number): Promise<{ user: User }> => {
+  try {
+    const response = await api.put(`/users/addMoney/${userId}`, { amount });
+
+    if (response.status !== 200) {
+      throw new Error("Failed to add money");
+    }
+
+    return { user: response.data.user };
+  } catch (error) {
+    console.error("Error adding money:", error);
+    throw error;
+  }
+}
+
+export const PayOrder = async (userId: string, orderId: string): Promise<{ user: User }> => {
+  try {
+    const response = await api.put(`/users/pay/${userId}`, { orderId });
+
+    if (response.status !== 200) {
+      throw new Error("Failed to pay order");
+    }
+
+    return { user: response.data.user };
+  } catch (error) {
+    console.error("Error paying order:", error);
+    throw error;
+  }
+}

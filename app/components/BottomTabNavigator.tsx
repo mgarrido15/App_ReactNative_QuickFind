@@ -9,7 +9,7 @@ import { Home } from '../screens/Home';
 import { Profile } from '../screens/Profile';
 import { Companies } from '../screens/Companies';
 import { ManageCompanies } from '../screens/ManageCompanies';
-import  Cart from '../screens/Cart';
+import  Chart from '../screens/Chart';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -83,7 +83,7 @@ const BottomTabNavigator = () => {
             />
             <Tab.Screen
                 name="Cart"
-                component={Cart}
+                component={Chart}
                 initialParams={{ user }}
                 options={{
                     tabBarIcon: ({ focused }) => (
