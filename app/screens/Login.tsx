@@ -1,15 +1,23 @@
-import { Text, View, Image, FlatList, SafeAreaView, Alert } from "react-native";
+import { Text, View, FlatList, SafeAreaView, Alert, Platform } from "react-native";
 import { CustomInput } from "../components/CustomInput";
 import { CustomButton } from "../components/CustomButton";
 import { styles } from "../styles";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList, screenProps } from "../../navigation/screenType";
-import { useState, useCallback } from "react";
+import { RootStackParamList } from "../../navigation/screenType";
+import { useState, useCallback, useEffect } from "react";
 import { User } from "../../models/User";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { logInUser } from "../../service/UserService";
 import * as LocalAuthentication from "expo-local-authentication";
+
+import * as Google from 'expo-auth-session/providers/google';
+import * as WebBrowser from 'expo-web-browser';
+import * as AuthSession from 'expo-auth-session';
+
+WebBrowser.maybeCompleteAuthSession();
+
+const API_URL = "http://localhost:4000/api";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Login">;
 
@@ -17,6 +25,87 @@ export const Login = () => {
   const navigation = useNavigation<NavigationProp>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const redirectUri = AuthSession.makeRedirectUri({
+    // @ts-ignore
+    useProxy: true,
+  });
+  console.log("Redirect URI:", redirectUri); // ✅ 添加
+
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    clientId: '47728922688-j402su96su82beicvv2tnegbjejehgo9.apps.googleusercontent.com',
+    redirectUri,
+     responseType: "token", // ✅ 添加这行
+  scopes: ["profile", "email"], // ✅ 添加这行
+  });
+
+  // ✅ Web端监听 Google 登录弹窗的回传数据
+  useEffect(() => {
+    const handleMessage = async (event: MessageEvent) => {
+      // ⚠️ 如果部署上线，请改成实际 origin；测试时可以注释掉下面这行
+      // if (event.origin !== "http://localhost:4000") return;
+
+      const { token, refreshToken, user } = event.data;
+
+      if (token && user) {
+        console.log("✅ Web Google 登录成功:", user);
+        await AsyncStorage.setItem("user", JSON.stringify(user));
+        await AsyncStorage.setItem("token", token);
+        await AsyncStorage.setItem("refreshToken", refreshToken);
+        navigation.navigate("Home", { user });
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
+  }, []);
+
+  useEffect(() => {
+  console.log("Google OAuth Response:", response); // ✅ 添加调试日志
+
+  if (response?.type === 'success') {
+    const { authentication } = response;
+    console.log("Authentication object:", authentication); // ✅ 添加调试日志
+
+    if (!authentication?.accessToken) {
+      console.warn("No accessToken received from Google Auth."); // ✅ 关键错误提示
+      Alert.alert("Error", "No se recibió el token de Google.");  // ✅ 提示用户
+      return;
+    }
+
+    // ✅ 如果 accessToken 存在才继续
+    fetch(`${API_URL}/users/auth/google/token?token=${authentication.accessToken}`)
+      .then(res => res.json())
+      .then(async data => {
+        console.log("Google Login Response:", data);
+        const user = data.user;
+        if (user && data.token) {
+          await AsyncStorage.setItem("user", JSON.stringify(user));
+          await AsyncStorage.setItem("token", data.token);
+          await AsyncStorage.setItem("refreshToken", data.refreshToken);
+          navigation.navigate("Home", { user });
+        } else {
+          Alert.alert("Error", "Respuesta del servidor inválida");
+        }
+      })
+      .catch((error) => {
+        console.error("Google login fetch error:", error);
+        Alert.alert("Error", "Error al autenticar con el servidor.");
+      });
+  }
+}, [response]);
+
+
+ const handleGoogleLogin = () => {
+  if (Platform.OS === 'web') {
+    const frontendOrigin = window.location.origin;
+    window.open(`${API_URL}/users/auth/google?origin=${encodeURIComponent(frontendOrigin)}`, "_blank", "width=500,height=600");
+  } else {
+    promptAsync();
+  }
+};
 
   const onLogin = useCallback(async () => {
     console.log("Intentando Login");
@@ -65,12 +154,8 @@ export const Login = () => {
         Alert.alert("Error", "No hay datos guardados para login biométrico. Prueba a logearte primero");
         return;
       }
-      if (userString) {
-        const user = JSON.parse(userString);
-        navigation.navigate("Home", { user });
-      } else {
-        Alert.alert("Error", "No hay datos guardados para login biométrico.");
-      }
+      const user = JSON.parse(userString);
+      navigation.navigate("Home", { user });
     } else {
       Alert.alert("Error en la autenticación biométrica");
     }
@@ -91,12 +176,12 @@ export const Login = () => {
       key: "password",
       component: (
         <CustomInput
-
           label="Password"
           isPassword={true}
           value={password}
           onChangeText={setPassword}
-        />)
+        />
+      ),
     },
     {
       key: "button",
@@ -105,6 +190,10 @@ export const Login = () => {
     {
       key: "biometric",
       component: <CustomButton label="Autenticación Biométrica" onPress={LoginBiometric} />,
+    },
+    {
+      key: "google",
+      component: <CustomButton label="Login con Google" onPress={handleGoogleLogin} />,
     },
   ];
 

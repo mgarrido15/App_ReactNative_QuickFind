@@ -16,7 +16,7 @@ const MapComponent: React.FC = () => {
   const [sidebarVisible, setSidebarVisible] = useState(false);
 
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: "AIzaSyB9OAqWHQcvEXAbcNtTJrqP6l8ePKxqDdo", // 替换为你的API密钥
+    googleMapsApiKey: "AIzaSyA2mEcj-UQPusAktW_10Szq7hW0rbRya_8", // 替换为你的API密钥
   });
 
   // 明确类型，避免 onLoad 报错
