@@ -627,7 +627,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 10,
-    backgroundColor: '#fff',
+    backgroundColor: '#7da0ca',
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

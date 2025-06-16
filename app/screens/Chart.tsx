@@ -173,7 +173,7 @@ const Chart = () => {
       ) : orders.length === 0 ? (
         <Text style={{ textAlign: "center" }}>No tienes pedidos pendientes.</Text>
       ) : (
-        <ScrollView>
+        <ScrollView style={{ maxHeight: 580 }}>
           {orders.map((order) => {
             const total = order.products.reduce(
               (sum, prod) => sum + (prod.product_id.price * prod.quantity),

@@ -4,6 +4,8 @@ import { socketService } from '../service/SocketService';
 import { Socket } from 'socket.io-client';
 import { useRoute } from '@react-navigation/native';
 import { styles } from '../styles';
+import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 
 interface Message {
     id: string;
@@ -13,6 +15,8 @@ interface Message {
 }
 
 const Chat = () => {
+    const navigation = useNavigation();
+
     const [connecting, setConnecting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
@@ -178,6 +182,20 @@ const Chat = () => {
         <SafeAreaView style={styles.chatContainer}>
             <View style={{ flex: 1, position: 'relative' }}>
                 <View style={styles.chatHeader}>
+                    <TouchableOpacity
+                        style={{
+                             position: 'absolute',
+                             top: 5,
+                             left: 10,
+                             zIndex: 10,
+                             backgroundColor: '#e0e6ed',
+                             borderRadius: 20,
+                             padding: 8,
+                         }} 
+                     onPress={() => navigation.goBack()}
+                    >
+                        <Ionicons name="arrow-back" size={24} color="#222" />
+                    </TouchableOpacity>
                     <Text style={styles.chatHeaderTitle}>Chat</Text>
                 </View>
 
@@ -232,8 +250,8 @@ const Chat = () => {
                 {/* Barra de entrada posicionada más arriba */}
                 <KeyboardAvoidingView
                     behavior={Platform.OS === "ios" ? "padding" : undefined}
-                    keyboardVerticalOffset={100}
-                    style={{ position: 'absolute', left: 0, right: 0, bottom: 50 }}  // 50 unidades más arriba
+                    keyboardVerticalOffset={0}
+                    style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}  // 50 unidades más arriba
                 >
                     <View style={styles.chatInputContainer}>
                         <TextInput
