@@ -169,6 +169,25 @@ export const PayOrder = async (userId: string, orderId: string): Promise<{ user:
     return { user: response.data.user };
   } catch (error) {
     console.error("Error paying order:", error);
+        throw error;
+
+  }}
+
+export const UpdateProfilePicture = async (email: string, avatar: string): Promise<{user: User; }> => {
+  try{
+    const response = await api.put(`users/updateAvatar`, {
+      email,
+      avatar,
+    });
+
+    if (response.status !== 200) {
+      throw new Error("Failed to update avatar");
+    }
+
+    return response.data;
+  }
+  catch (error){
+    console.error("Error updateing avatar:", error);
     throw error;
   }
 }
