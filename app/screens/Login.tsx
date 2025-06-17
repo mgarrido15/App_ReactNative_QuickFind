@@ -27,7 +27,7 @@ const Login = () => {
   const [sharedCompanyId, setSharedCompanyId] = useState<string | null>(null);
   const [sharedProductId, setSharedProductId] = useState<string | null>(null);
 
-  const redirectUri = AuthSession.makeRedirectUri({ useProxy: true });
+  const redirectUri = AuthSession.makeRedirectUri({});
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: '47728922688-j402su96su82beicvv2tnegbjejehgo9.apps.googleusercontent.com',
