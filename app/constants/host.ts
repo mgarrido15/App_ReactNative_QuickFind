@@ -1,0 +1,1 @@
+export const BASE_URL = "http://192.168.1.146:4000";// Works for web modufy if needed for mobile

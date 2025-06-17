@@ -10,7 +10,6 @@ import { User } from "../../models/User";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { logInUser } from "../../service/UserService";
 import * as LocalAuthentication from "expo-local-authentication";
-
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import * as AuthSession from 'expo-auth-session';
@@ -21,125 +20,123 @@ const API_URL = "http://localhost:4000/api";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Login">;
 
-export const Login = () => {
+const Login = () => {
   const navigation = useNavigation<NavigationProp>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [sharedCompanyId, setSharedCompanyId] = useState<string | null>(null);
+  const [sharedProductId, setSharedProductId] = useState<string | null>(null);
 
-  const redirectUri = AuthSession.makeRedirectUri({
-    // @ts-ignore
-    useProxy: true,
-  });
-  console.log("Redirect URI:", redirectUri); // ✅ 添加
+  const redirectUri = AuthSession.makeRedirectUri({ useProxy: true });
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: '47728922688-j402su96su82beicvv2tnegbjejehgo9.apps.googleusercontent.com',
     redirectUri,
-     responseType: "token", // ✅ 添加这行
-  scopes: ["profile", "email"], // ✅ 添加这行
+    responseType: "token",
+    scopes: ["profile", "email"],
   });
 
-  // ✅ Web端监听 Google 登录弹窗的回传数据
+  // 从 URL 中读取分享参数
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const cId = params.get("companyId");
+    const pId = params.get("productId");
+    if (cId && pId) {
+      setSharedCompanyId(cId);
+      setSharedProductId(pId);
+      AsyncStorage.setItem("sharedCompanyId", cId);
+      AsyncStorage.setItem("sharedProductId", pId);
+    }
+  }, []);
+
+  // Web Google 登录窗口回传数据监听
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
-      // ⚠️ 如果部署上线，请改成实际 origin；测试时可以注释掉下面这行
-      // if (event.origin !== "http://localhost:4000") return;
-
       const { token, refreshToken, user } = event.data;
-
       if (token && user) {
-        console.log("✅ Web Google 登录成功:", user);
         await AsyncStorage.setItem("user", JSON.stringify(user));
         await AsyncStorage.setItem("token", token);
         await AsyncStorage.setItem("refreshToken", refreshToken);
-        navigation.navigate("Home", { user });
+        await redirectAfterLogin();
       }
     };
-
     window.addEventListener("message", handleMessage);
-    return () => {
-      window.removeEventListener("message", handleMessage);
-    };
+    return () => window.removeEventListener("message", handleMessage);
   }, []);
 
+  // Google OAuth 回调处理
   useEffect(() => {
-  console.log("Google OAuth Response:", response); // ✅ 添加调试日志
+    if (response?.type === 'success') {
+      const accessToken = response.authentication?.accessToken;
+      if (!accessToken) {
+        Alert.alert("Error", "No se recibió el token de Google.");
+        return;
+      }
 
-  if (response?.type === 'success') {
-    const { authentication } = response;
-    console.log("Authentication object:", authentication); // ✅ 添加调试日志
-
-    if (!authentication?.accessToken) {
-      console.warn("No accessToken received from Google Auth."); // ✅ 关键错误提示
-      Alert.alert("Error", "No se recibió el token de Google.");  // ✅ 提示用户
-      return;
+      fetch(`${API_URL}/users/auth/google/token?token=${accessToken}`)
+        .then(res => res.json())
+        .then(async data => {
+          const user = data.user;
+          if (user && data.token) {
+            await AsyncStorage.setItem("user", JSON.stringify(user));
+            await AsyncStorage.setItem("token", data.token);
+            await AsyncStorage.setItem("refreshToken", data.refreshToken);
+            await redirectAfterLogin();
+          } else {
+            Alert.alert("Error", "Respuesta del servidor inválida");
+          }
+        })
+        .catch(() => {
+          Alert.alert("Error", "Error al autenticar con el servidor.");
+        });
     }
+  }, [response]);
 
-    // ✅ 如果 accessToken 存在才继续
-    fetch(`${API_URL}/users/auth/google/token?token=${authentication.accessToken}`)
-      .then(res => res.json())
-      .then(async data => {
-        console.log("Google Login Response:", data);
-        const user = data.user;
-        if (user && data.token) {
-          await AsyncStorage.setItem("user", JSON.stringify(user));
-          await AsyncStorage.setItem("token", data.token);
-          await AsyncStorage.setItem("refreshToken", data.refreshToken);
-          navigation.navigate("Home", { user });
-        } else {
-          Alert.alert("Error", "Respuesta del servidor inválida");
-        }
-      })
-      .catch((error) => {
-        console.error("Google login fetch error:", error);
-        Alert.alert("Error", "Error al autenticar con el servidor.");
-      });
-  }
-}, [response]);
-
-
- const handleGoogleLogin = () => {
-  if (Platform.OS === 'web') {
-    const frontendOrigin = window.location.origin;
-    window.open(`${API_URL}/users/auth/google?origin=${encodeURIComponent(frontendOrigin)}`, "_blank", "width=500,height=600");
-  } else {
-    promptAsync();
-  }
-};
+  const handleGoogleLogin = () => {
+    if (Platform.OS === 'web') {
+      const frontendOrigin = window.location.origin;
+      window.open(`${API_URL}/users/auth/google?origin=${encodeURIComponent(frontendOrigin)}`, "_blank", "width=500,height=600");
+    } else {
+      promptAsync();
+    }
+  };
 
   const onLogin = useCallback(async () => {
-    console.log("Intentando Login");
-    Alert.alert("Login", "Intentando login");
-
     if (!email || !password) {
       Alert.alert("Error", "Por favor, completa todos los campos.");
       return;
     }
-
     try {
       const response = await logInUser(email, password);
-      console.log("Login response:", response);
-      const user: User = response.user;
-      AsyncStorage.setItem("user", JSON.stringify(user));
-      AsyncStorage.setItem("token", response.token);
-      AsyncStorage.setItem("refreshToken", response.refreshToken);
-      navigation.navigate("Home", { user });
-    }
-    catch (error) {
-      console.error("Error de red:", error);
+      await AsyncStorage.setItem("user", JSON.stringify(response.user));
+      await AsyncStorage.setItem("token", response.token);
+      await AsyncStorage.setItem("refreshToken", response.refreshToken);
+      await redirectAfterLogin();
+    } catch (error) {
       Alert.alert("Error", "No se pudo conectar con el servidor.");
     }
-  }, [email, password, navigation]);
+  }, [email, password]);
+
+  const redirectAfterLogin = async () => {
+    const cId = await AsyncStorage.getItem("sharedCompanyId");
+    const pId = await AsyncStorage.getItem("sharedProductId");
+    if (cId && pId) {
+      await AsyncStorage.removeItem("sharedCompanyId");
+      await AsyncStorage.removeItem("sharedProductId");
+      navigation.navigate("Home", {
+        screen: "Home",
+        params: { companyId: cId, productId: pId },
+      } as any);
+    } else {
+      navigation.navigate("Home", { screen: "Home" } as any);
+    }
+  };
 
   const LoginBiometric = async () => {
     const hasHardware = await LocalAuthentication.hasHardwareAsync();
-    const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
     const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-    const supportsBiometrics = supportedTypes.includes(LocalAuthentication.AuthenticationType.FINGERPRINT) || supportedTypes.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION);
-    console.log('Tipos soportados:', supportedTypes);
-
-    if (!hasHardware || !isEnrolled || !supportsBiometrics) {
-      Alert.alert("Autenticación biométrica no disponible", "Tu dispositivo no soporta la autenticación biométrica o no está configurado.");
+    if (!hasHardware || !isEnrolled) {
+      Alert.alert("Biometría no disponible", "Tu dispositivo no soporta o no tiene configurado biometría.");
       return;
     }
 
@@ -149,52 +146,23 @@ export const Login = () => {
     });
 
     if (result.success) {
-      const userString = await AsyncStorage.getItem("user");
-      if (!userString) {
-        Alert.alert("Error", "No hay datos guardados para login biométrico. Prueba a logearte primero");
+      const userStr = await AsyncStorage.getItem("user");
+      if (!userStr) {
+        Alert.alert("Error", "No hay datos guardados para login biométrico.");
         return;
       }
-      const user = JSON.parse(userString);
-      navigation.navigate("Home", { user });
+      await redirectAfterLogin();
     } else {
       Alert.alert("Error en la autenticación biométrica");
     }
   };
 
   const formFields = [
-    {
-      key: "email",
-      component: (
-        <CustomInput
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-        />
-      ),
-    },
-    {
-      key: "password",
-      component: (
-        <CustomInput
-          label="Password"
-          isPassword={true}
-          value={password}
-          onChangeText={setPassword}
-        />
-      ),
-    },
-    {
-      key: "button",
-      component: <CustomButton label="Login" onPress={onLogin} />,
-    },
-    {
-      key: "biometric",
-      component: <CustomButton label="Autenticación Biométrica" onPress={LoginBiometric} />,
-    },
-    {
-      key: "google",
-      component: <CustomButton label="Login con Google" onPress={handleGoogleLogin} />,
-    },
+    { key: "email", component: <CustomInput label="Email" value={email} onChangeText={setEmail} /> },
+    { key: "password", component: <CustomInput label="Password" isPassword value={password} onChangeText={setPassword} /> },
+    { key: "button", component: <CustomButton label="Login" onPress={onLogin} /> },
+    { key: "biometric", component: <CustomButton label="Autenticación Biométrica" onPress={LoginBiometric} /> },
+    { key: "google", component: <CustomButton label="Login with Google" onPress={handleGoogleLogin} /> },
   ];
 
   return (
@@ -211,3 +179,5 @@ export const Login = () => {
     </SafeAreaView>
   );
 };
+
+export default Login;

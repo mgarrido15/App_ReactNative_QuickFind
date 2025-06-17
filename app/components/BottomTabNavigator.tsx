@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRoute } from "@react-navigation/native";
 import { TabParamList } from '../../navigation/screenType';
 import { styles } from '../styles'; 
-import { Home } from '../screens/Home';
+import  Home  from '../screens/Home';
 import Profile from '../screens/Profile';
 import { Companies } from '../screens/Companies';
 import { ManageCompanies } from '../screens/ManageCompanies';

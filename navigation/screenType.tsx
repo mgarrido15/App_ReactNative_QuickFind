@@ -4,7 +4,7 @@ import { Company } from '../models/Company';
 
 export type RootStackParamList = {
     Login: undefined;
-    Home: { user: User };
+    Home: { user: User; companyId?: string; productId?: string };
 };
 
 export type TabParamList = {
@@ -15,6 +15,7 @@ export type TabParamList = {
     Cart: { user: User };
     Profile: { user: User };
     ReserveProduct : { company: Company; user: User};
+    Map: { user: User; companyId?: string; productId?: string }; 
 };
 
 export type screenProps = NativeStackScreenProps<RootStackParamList>;
